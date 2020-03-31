@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.3.0" orientation="orthogonal" renderorder="left-up" compressionlevel="0" width="20" height="14" tilewidth="30" tileheight="30" infinite="0" nextlayerid="9" nextobjectid="44">
+ <tileset firstgid="1" source="../Tiles/Files/laboratory.tsx"/>
+ <layer id="1" name="Camada de Tiles 1" width="20" height="14">
+  <data encoding="csv">
+3,3,3,3,3,3,19,19,19,19,15,15,15,15,15,15,15,15,15,15,
+3,3,3,3,3,3,19,55,6,6,15,15,15,15,15,15,15,15,15,15,
+3,3,3,3,3,3,19,19,15,15,15,15,15,15,15,15,15,15,15,15,
+12,12,12,12,12,12,19,19,24,24,24,24,24,24,24,24,24,24,24,24,
+1,1,1,1,38,38,38,38,38,38,38,38,38,38,38,38,38,38,38,19,
+1,1,1,1,19,19,19,55,19,19,19,19,19,19,55,19,19,19,38,19,
+1,1,1,1,19,38,38,38,38,38,38,38,38,38,38,38,38,38,38,19,
+1,1,1,1,55,38,19,19,19,19,19,55,19,19,19,19,19,55,19,19,
+1,1,1,1,19,38,38,38,38,38,38,38,38,38,38,38,38,38,38,19,
+1,1,1,1,19,19,19,19,19,55,19,19,19,19,19,19,19,19,38,19,
+11,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,11,
+11,1,1,11,1,10,1,11,1,10,1,11,1,10,1,11,1,10,1,11,
+11,1,1,11,1,1,1,11,1,1,1,11,1,1,1,11,1,1,1,11,
+11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11,11
+</data>
+ </layer>
+ <layer id="2" name="Camada de Tiles 2" width="20" height="14">
+  <data encoding="csv">
+0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,4,32,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,22,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+21,0,0,21,46,46,46,46,46,46,46,46,46,46,46,46,46,46,0,0,
+0,0,0,51,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+21,0,0,21,0,0,46,46,46,46,46,46,46,46,46,46,46,46,46,0,
+0,0,0,51,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+21,0,0,21,0,46,46,46,46,46,46,46,46,46,46,46,46,46,0,0,
+0,0,0,49,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,30,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <layer id="3" name="Camada de Tiles 3" width="20" height="14">
+  <data encoding="csv">
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,37,37,37,37,37,37,37,37,37,37,37,37,37,37,0,37,
+0,0,0,2,0,0,0,2,0,0,0,2,0,0,0,2,0,0,0,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,2,2,0,2,2,2,0,2,2,2,0,2,2,2,0,2,2,2,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+</data>
+ </layer>
+ <objectgroup id="6" name="NODES">
+  <object id="10" name="node_0" type="1" x="126" y="140" width="20" height="8"/>
+  <object id="21" name="node_1" type="2" x="567" y="121" width="9" height="23"/>
+  <object id="22" name="node_2" type="3" x="538.417" y="200" width="31" height="8"/>
+  <object id="23" name="node_3" type="2" x="148" y="177.5" width="5" height="31"/>
+  <object id="25" name="node_4" type="1" x="148.333" y="261.333" width="35" height="9"/>
+  <object id="26" name="node_5" type="2" x="566" y="239" width="7" height="30"/>
+  <object id="27" name="node_6" type="3" x="539" y="328" width="35" height="7"/>
+  <object id="28" name="node_7" type="2" x="385" y="299" width="5" height="31">
+   <properties>
+    <property name="TRIGGER" type="int" value="4"/>
+   </properties>
+  </object>
+  <object id="29" name="node_8" type="2" x="266" y="293" width="5" height="38">
+   <properties>
+    <property name="TRIGGER" type="int" value="3"/>
+   </properties>
+  </object>
+  <object id="30" name="node_9" type="2" x="145" y="288" width="6" height="45">
+   <properties>
+    <property name="TRIGGER" type="int" value="2"/>
+   </properties>
+  </object>
+  <object id="31" name="node_10" type="2" x="507" y="294" width="5" height="43">
+   <properties>
+    <property name="TRIGGER" type="int" value="5"/>
+   </properties>
+  </object>
+  <object id="32" name="node_11" type="2" x="25" y="295" width="6" height="37"/>
+  <object id="33" name="node_12" type="0" x="21.5" y="379.5" width="553" height="9"/>
+ </objectgroup>
+ <objectgroup id="7" name="REVERSE">
+  <object id="34" name="reverse_1" type="1" x="506.667" y="306" width="34" height="6.66667"/>
+  <object id="35" name="reverse_0" type="4" x="37.3333" y="356" width="505.333" height="6.66667"/>
+  <object id="36" name="reverse_2" type="4" x="568" y="300" width="6" height="33.3333"/>
+  <object id="37" name="reverse_3" type="1" x="388.667" y="306.333" width="30" height="6"/>
+  <object id="38" name="reverse_4" type="1" x="265.833" y="303" width="37.3333" height="10"/>
+  <object id="39" name="reverse_5" type="1" x="146.667" y="303" width="34" height="7.33333"/>
+  <object id="40" name="reverse_6" type="1" x="39.3333" y="304.167" width="42.6667" height="7.33333"/>
+ </objectgroup>
+ <objectgroup id="4" name="VICTIMS" visible="0">
+  <object id="1" name="victim_1" type="4" x="395.999" y="330">
+   <point/>
+  </object>
+  <object id="17" name="victim_0" type="2" x="515" y="330">
+   <point/>
+  </object>
+  <object id="18" name="victim_4" type="3" x="45" y="330">
+   <point/>
+  </object>
+  <object id="19" name="victim_2" type="1" x="275.333" y="330">
+   <point/>
+  </object>
+  <object id="20" name="victim_3" type="0" x="156.333" y="330">
+   <point/>
+  </object>
+ </objectgroup>
+ <objectgroup id="8" name="AREA" visible="0">
+  <object id="41" name="area_0" x="121" y="120" width="475" height="175"/>
+  <object id="42" name="area_1" x="182" y="1" width="54" height="113"/>
+  <object id="43" name="area_2" x="239" y="0" width="56" height="33"/>
+ </objectgroup>
+ <objectgroup id="5" name="DOORS">
+  <object id="2" name="door_0" x="120" y="75" width="30" height="45"/>
+ </objectgroup>
+</map>
