@@ -12,8 +12,11 @@ class Game:
 		pygame.display.set_icon(pygame.image.load('icon.ico'))
 		pygame.mouse.set_visible(False)
 
-		self.screen = pygame.display.set_mode((1200, 800))
-		self.display = pygame.Surface((600, 400))
+		self.screenSize = (900,600)
+		self.rescale = 0.8
+
+		self.screen = pygame.display.set_mode(self.screenSize)
+		self.display = pygame.Surface((int(self.screenSize[0] * self.rescale), int(self.screenSize[1] * self.rescale)))
 		self.monotype = pygame.font.Font('Fonts/monotype.ttf', 15)
 		
 		#MIXER
@@ -34,10 +37,10 @@ class Game:
 		self.nxtlvl = 0
 		self.glock = pygame.time.Clock()
 		self.FPS = 60
-		self.displayzw = 600
-		self.displayzh = 400
+		self.displayzw = int(self.screenSize[0] * self.rescale)
+		self.displayzh = int(self.screenSize[1] * self.rescale)
 		self.winbar = 210
-		self.cam = pygame.Rect(0,0,600,400)
+		self.cam = pygame.Rect(0,0,self.displayzw,self.displayzh)
 		self.speakin = 0
 		self.opt = 0
 		self.lopt = 0
@@ -417,7 +420,7 @@ class Game:
 				sys.exit()
 
 			self.pressed = pygame.key.get_pressed()
-			self.mp = pygame.Rect(round(pygame.mouse.get_pos()[0]/2),round(pygame.mouse.get_pos()[1]/2),3,3)
+			self.mp = pygame.Rect(round(pygame.mouse.get_pos()[0] * self.rescale),round(pygame.mouse.get_pos()[1] * self.rescale),3,3)
 			if self.pressed[pygame.K_DELETE]: self.rectdebug = not self.rectdebug
 
 			if event.type == pygame.MOUSEBUTTONUP:
@@ -1053,7 +1056,7 @@ class Game:
 		#BACKGROUND
 		if self.mnu != 3:
 			if self.ctb != None: self.display.blit(pygame.image.load('Sprites/' + self.ctb + '.png'),(0,0))
-			else: pygame.draw.rect(self.display,(0,0,0),pygame.Rect(0,0,600,400))
+			else: pygame.draw.rect(self.display,(0,0,0),pygame.Rect(0,0,self.displayzw,self.displayzh))
 		if self.opt == 10:
 			if self.logalpha < 255: self.logalpha += 10
 			srf = pygame.Surface((355,172), pygame.SRCALPHA, 32)
@@ -1064,8 +1067,8 @@ class Game:
 			self.display.blit(srf,(120, 100))
 		
 		#BLACK BARS
-		pygame.draw.rect(self.display, (0, 0, 0), pygame.Rect(0,0,600,self.winbar))
-		pygame.draw.rect(self.display, (0, 0, 0), pygame.Rect(0,400,600,-self.winbar))
+		pygame.draw.rect(self.display, (0, 0, 0), pygame.Rect(0,0,self.displayzw,self.winbar))
+		pygame.draw.rect(self.display, (0, 0, 0), pygame.Rect(0,self.displayzh - self.winbar,self.displayzw,self.winbar))
 			
 		#ELEVATOR
 		if self.etext != '':
@@ -1095,7 +1098,7 @@ class Game:
 				elif l in ['i','I','!','.',',']: l1 += 2
 				else: l1 += 7
 
-			srf = pygame.Surface((600,10))
+			srf = pygame.Surface((self.displayzw,10))
 			srf.set_alpha(100)
 			srf.fill((0, 0, 0))
 			self.txtsrf.set_alpha(self.logalpha)
@@ -1197,7 +1200,7 @@ class Game:
 		if self.cam.y > (self.map.height * self.map.tileheight) - self.displayzh: self.cam.y = (self.map.height * self.map.tileheight) - self.displayzh'''
 
 		self.display.blit(pygame.image.load('Sprites/cursor_' + str(self.cursor) + '.png'),(self.mp.x,self.mp.y))
-		self.screen.blit(pygame.transform.scale(self.display, (1200, 800)), (0, 0))
+		self.screen.blit(pygame.transform.scale(self.display, self.screenSize), (0, 0))
 		pygame.display.update()
 		pygame.display.flip()
 	
