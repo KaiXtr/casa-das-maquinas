@@ -46,10 +46,10 @@ TRAPS = [
 ]
 
 ROBOTS = [
-{'HP': 5, 'DAMAGE': 2, 'SPD': 2, 'SPRITE': 'ROBOT_2'},
-{'HP': 3, 'DAMAGE': 1, 'SPD': 4, 'SPRITE': 'ROBOT_0'},
-{'HP': 8, 'DAMAGE': 2, 'SPD': 2, 'SPRITE': 'ROBOT_1'},
-{'HP': 8, 'DAMAGE': 2, 'SPD': 2, 'SPRITE': 'ROBOT_4'},
+{'HP': 5, 'DAMAGE': 2, 'SPD': 1, 'SPRITE': 'ROBOT_2'},
+{'HP': 3, 'DAMAGE': 1, 'SPD': 2, 'SPRITE': 'ROBOT_0'},
+{'HP': 8, 'DAMAGE': 2, 'SPD': 3, 'SPRITE': 'ROBOT_1'},
+{'HP': 8, 'DAMAGE': 2, 'SPD': 1, 'SPRITE': 'ROBOT_4'},
 {'HP': 10, 'DAMAGE': 3, 'SPD': 1, 'SPRITE': 'ROBOT_3'},
 {'HP': 20, 'DAMAGE': 2, 'SPD': 1, 'SPRITE': 'ROBOT_5'},
 ]

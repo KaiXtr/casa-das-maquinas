@@ -13,7 +13,8 @@ class Game:
 		pygame.mouse.set_visible(False)
 
 		self.screenSize = (900,600)
-		self.rescale = 0.8
+		self.rescale = 0.65
+		self.aniSpeed = 0.2
 
 		self.screen = pygame.display.set_mode(self.screenSize)
 		self.display = pygame.Surface((int(self.screenSize[0] * self.rescale), int(self.screenSize[1] * self.rescale)))
@@ -49,7 +50,7 @@ class Game:
 		self.trapgif = 0.0
 		self.logalpha = 0
 		self.dlg = []
-		self.dlgping = False
+		self.dlgping = 0
 		self.ptmove = 0
 		self.elevator = 430
 		self.tindex = 1
@@ -95,8 +96,8 @@ class Game:
 		self.transiction(False,55)
 	
 	def victim(self,i):
-		if self.pause < 3: i['IMAGE'] += 0.5
-		if i['IMAGE'] == 2.0: i['IMAGE'] = 0.0
+		if self.pause < 3: i['IMAGE'] += self.aniSpeed
+		if i['IMAGE'] >= 2.0: i['IMAGE'] = 0.0
 
 		if i['CAPTURED'] != None:
 			found = False
@@ -140,13 +141,13 @@ class Game:
 		if i['TYPE'] == 4:
 			if i['DMGTIM'] >= 80: i['GIF'] = 1
 			else: i['GIF'] = 0
-		elif self.pause < 3: i['GIF'] += 1
+		elif self.pause < 3: i['GIF'] += self.aniSpeed
 		if i['GIF'] >= len(database.SPRITES[i['SPRITE']]): i['GIF'] = 0
 
 		if i['SPRITE'] == 'ROBOT_1': ex = 20
 		else: ex = 0
 		self.display.blit(pygame.image.load('Sprites/shade.png'),(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y - ex + int(i['RECT'].height/2)))
-		img = database.SPRITES[i['SPRITE']][i['GIF']]
+		img = database.SPRITES[i['SPRITE']][math.floor(i['GIF'])]
 		self.display.blit(img,(i['RECT'].x - (round(img.get_rect().width/2) - 10) - self.cam.x,i['RECT'].y - (img.get_rect().height - 12) - self.cam.y - ex))
 		if i['DMGTIM'] > 50 and i['DMGTIM'] < 80 and i['TYPE'] == 4:
 			pygame.draw.line(self.display, (255,10,10), (i['RECT'].x - (round(img.get_rect().width/2) - 10) - self.cam.x + 10,i['RECT'].y - (img.get_rect().height - 12) - self.cam.y + 10 - ex),i['LASER'],2)
@@ -233,6 +234,9 @@ class Game:
 						i['HP'] -= b['DAMAGE']
 						i['DMGSHW'] = 100
 						b['DESTROY'] = True
+		
+		if i['RECT'].x > self.displayzw: i['HP'] = 0
+		if i['RECT'].y > self.displayzh: i['HP'] = 0
 
 		if i['HP'] <= 0:
 			self.items.append({'N': self.itemcount, 'TYPE': 0, 'JUMP': 5, 'GRAVITY': 4.5, 'GIF': 0.0,
@@ -250,18 +254,18 @@ class Game:
 		else: sprite = 'COIN'
 
 		#JUMP & GRAVITY
-		i['GIF'] += 0.5
+		i['GIF'] += 0.2
 		if i['GIF'] >= len(database.SPRITES[sprite]): i['GIF'] = 0.0
 		if i['GRAVITY'] > -5:
 			i['JUMP'] += i['GRAVITY']
-			i['GRAVITY'] -= 0.5
+			i['GRAVITY'] -= self.aniSpeed
 		
 		img = database.SPRITES[sprite][math.floor(i['GIF'])]
 		self.display.blit(pygame.image.load('Sprites/shade.png'),(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y))
 		self.display.blit(img,(i['RECT'].x - self.cam.x + int(img.get_rect().width/2),i['RECT'].y - self.cam.y - i['JUMP'] - int(img.get_rect().height/2)))
 		
 		#GET ITEM
-		if i['GRAVITY'] == -5 and i['GET'] == False:
+		if i['GRAVITY'] <= -5 and i['GET'] == False:
 			if sprite == 'COIN':
 				self.ch_sfx.play(database.SOUND['COIN'])
 				database.MONEY += 10
@@ -314,7 +318,7 @@ class Game:
 				else: explosion = False; ex = 0
 				self.bullets.append({'DIRECTION': d, 'DAMAGE': i['UPGRADE'] + 1 + ex, 'RECT': pygame.Rect(i['RECT'].x + 5,i['RECT'].y,10,10), 'DESTROY': False, 'TRLTIM': 10, 'TARGET': t, 'FOLLOW': self.en[0]['RECT'], 'FIND': e, 'EXPLODE': explosion})
 				self.ch_ton.play(database.SOUND['BULLET'])
-				i['TIME'] = 40 - (5 * i['UPGRADE'])
+				i['TIME'] = 60 - (5 * i['UPGRADE'])
 
 		#EXPLODE
 		if i['HP'] <= 0:
@@ -644,13 +648,10 @@ class Game:
 
 	def wait(self):
 		waiting = True
-		blkspd = 6
 		while waiting == True:
-			blkspd -= 1
-			if blkspd == 0: blkspd = 6
-			if blkspd > 3: self.dlgping = True
-			else: self.dlgping = False
-			self.mp = pygame.Rect(round(pygame.mouse.get_pos()[0]/2),round(pygame.mouse.get_pos()[1]/2),3,3)
+			self.dlgping += 1
+			if self.dlgping > 10: self.dlgping = 0
+			self.mp = pygame.Rect(round(pygame.mouse.get_pos()[0] * self.rescale),round(pygame.mouse.get_pos()[1] * self.rescale),3,3)
 			self.run()
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:
@@ -659,7 +660,7 @@ class Game:
 					sys.exit()
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					self.dlg = []
-					self.dlgping = False
+					self.dlgping = 1
 					waiting = False
 					self.cursor = 1
 					if event.button == 3:
@@ -959,8 +960,8 @@ class Game:
 			else: del self.trail[i]; break
 		for i in range(len(self.explosions)):
 			if self.explosions[i]['GIF'] < 8:
-				self.display.blit(database.SPRITES['EXPLODE'][self.explosions[i]['GIF']], (self.explosions[i]['RECT'].x - self.cam.x, self.explosions[i]['RECT'].y - self.cam.y))
-				self.explosions[i]['GIF'] += 1
+				self.display.blit(database.SPRITES['EXPLODE'][math.floor(self.explosions[i]['GIF'])], (self.explosions[i]['RECT'].x - self.cam.x, self.explosions[i]['RECT'].y - self.cam.y))
+				self.explosions[i]['GIF'] += 0.3
 			else: del self.explosions[i]; break
 		for i in range(len(self.ashes)):
 			if self.ashes[i]['GIF'] < 9:
@@ -1152,7 +1153,7 @@ class Game:
 		#DIALOGS
 		if self.dlg != []:
 			self.display.blit(self.monotype.render(self.dlg[0], True, (250,250,250)),(100,360))
-			if self.dlgping == True: self.display.blit(pygame.image.load('Sprites/ping.png'),(480,365))
+			if self.dlgping % 5 == 0: self.display.blit(pygame.image.load('Sprites/ping.png'),(480,365))
 
 		#TUTORIAL
 		if self.tutfa > 0:
