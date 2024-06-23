@@ -1,0 +1,1 @@
+pyinstaller casa_das_maquinas.spec
