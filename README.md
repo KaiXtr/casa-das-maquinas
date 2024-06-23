@@ -1,6 +1,8 @@
 ﻿# Casa das Máquinas
 Jogo desenvolvido para o concurso Corona Jam de 2020.
 
+![casadasmaquinas](https://github.com/KaiXtr/casa-das-maquinas/assets/42985693/2d95d237-d432-4075-8940-eb5e77a83a46)
+
 ### Nota para o concurso
 
 Primeiramente, obrigado pela paciência para ler isso aqui
