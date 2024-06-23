@@ -234,8 +234,11 @@ class Game:
 						i['HP'] -= b['DAMAGE']
 						i['DMGSHW'] = 100
 						b['DESTROY'] = True
+						self.explosions.append({'RECT': pygame.Rect(i['RECT'].x,i['RECT'].y,10,10), 'GIF': 0})
 		
+		if i['RECT'].x < 0: i['HP'] = 0
 		if i['RECT'].x > self.displayzw: i['HP'] = 0
+		if i['RECT'].y < 0: i['HP'] = 0
 		if i['RECT'].y > self.displayzh: i['HP'] = 0
 
 		if i['HP'] <= 0:
@@ -305,7 +308,7 @@ class Game:
 		if i['TYPE'] in [2,4,5] and self.pause < 3 and len(self.en) > 0:
 			i['TIME'] -= 1
 			if i['TIME'] == 0:
-				if i['TYPE'] == 4: t = 1
+				if i['TYPE'] == 4: t = 0 #1 seria para defesas aéreas
 				else: t = 0
 				ru = []
 				for b in self.bullets: ru.append(b['FIND'])
@@ -315,10 +318,10 @@ class Game:
 						if b['N'] not in ru: e = b['N']; break
 				else: e = self.en[0]['N']
 				if i['TYPE'] == 5: explosion = True; ex = 5
-				else: explosion = False; ex = 0
-				self.bullets.append({'DIRECTION': d, 'DAMAGE': i['UPGRADE'] + 1 + ex, 'RECT': pygame.Rect(i['RECT'].x + 5,i['RECT'].y,10,10), 'DESTROY': False, 'TRLTIM': 10, 'TARGET': t, 'FOLLOW': self.en[0]['RECT'], 'FIND': e, 'EXPLODE': explosion})
+				else: explosion = False; ex = 1
+				self.bullets.append({'DIRECTION': d, 'DAMAGE': ((i['TYPE'] - 2) * i['UPGRADE']) + ex, 'RECT': pygame.Rect(i['RECT'].x + 5,i['RECT'].y,10,10), 'DESTROY': False, 'TRLTIM': 10, 'TARGET': t, 'FOLLOW': self.en[0]['RECT'], 'FIND': e, 'EXPLODE': explosion})
 				self.ch_ton.play(database.SOUND['BULLET'])
-				i['TIME'] = 60 - (5 * i['UPGRADE'])
+				i['TIME'] = 60 - (10 * i['UPGRADE'])
 
 		#EXPLODE
 		if i['HP'] <= 0:
@@ -326,22 +329,26 @@ class Game:
 	
 	def door(self,i):
 		if database.ENEMIES[0] >= database.ENEMIES[1]:
-			i['SPAWN'] = 300
-			database.WAVES[0] += 1
-			if database.WAVES[0] < database.WAVES[1]:
-				self.text = 'ONDA ' + str(database.WAVES[0])
-				database.ENEMIES[1] += 5 * database.WAVES[0]
-				self.txty = 400
-			elif self.pause < 3:
-				self.pause = 3
-				for e in self.en:
-					e['HP'] = 0
-					self.explosions.append({'RECT': pygame.Rect(e['RECT'].x,e['RECT'].y,10,10), 'GIF': 0})
-				self.ch_msc.fadeout(2500)
-				for t in range(70): self.run()
-				self.ch_msc.play(database.SOUND['VICTORY'])
-				for t in range(50): self.run()
-				self.pause = 4
+			if len(self.en) > 0:
+				i['SPAWN'] = 0
+			else:
+				i['SPAWN'] = 300
+				database.WAVES[0] += 1
+				if database.WAVES[0] < database.WAVES[1]:
+					self.text = 'ONDA ' + str(database.WAVES[0])
+					database.ENEMIES[0] = 0
+					database.ENEMIES[1] += 5 * database.WAVES[0]
+					self.txty = 400
+				elif self.pause < 3:
+					self.pause = 3
+					for e in self.en:
+						e['HP'] = 0
+						self.explosions.append({'RECT': pygame.Rect(e['RECT'].x,e['RECT'].y,10,10), 'GIF': 0})
+					self.ch_msc.fadeout(2500)
+					for t in range(70): self.run()
+					self.ch_msc.play(database.SOUND['VICTORY'])
+					for t in range(50): self.run()
+					self.pause = 4
 
 		if i['OPNCLS'] == True: oc = True
 		elif i['DRTIM'] > 0: oc = False; i['DRTIM'] -= 1
@@ -363,7 +370,7 @@ class Game:
 				rb['TYPE'] = tp
 				rb['MAXHP'] = rb['HP']
 				rb['HPLOSS'] = rb['HP']
-				if tp == 2: rb['MOVE'] = 1
+				if tp == 2: rb['MOVE'] = 0 #1 drones só seriam destruídos com defesas aéreas
 				else: rb['MOVE'] = 0
 				rb['GIF'] = 0
 				rb['RECT'] = pygame.Rect(i['RECT'].x + 5,i['RECT'].y + 50,20,12)
@@ -541,7 +548,7 @@ class Game:
 									self.dialog(['Parece que vou ter que salvar o dia',1,'Afe, mas isso vai ser difícil...',1])
 									if self.mnu < 3: self.transiction(True,210,2)
 									self.ch_msc.stop()
-									self.dialog(['é óbvio que vou colocar máquinas para quebrar  ',0,'os próprios robôs do laboratório ao invés de  ',0,'chamar as autoridades',1])
+									self.dialog(['é óbvio que vou colocar máquinas para quebrar',1,'os próprios robôs do laboratório ao invés de',1,'chamar as autoridades',1])
 									self.etext = 'PRIMEIRO ANDAR'
 									while self.elevator > 0:
 										self.elevator -= 5
@@ -699,7 +706,7 @@ class Game:
 		self.explosions = []
 		self.area = []
 		database.ENEMIES = [0,10]
-		database.WAVES = [1,6 * (database.MAP + 1)]
+		database.WAVES = [1,3 + (database.MAP * 2)]
 		database.MONEY = database.VICTIMS[0] * 20
 		database.TRAPS = [
 		{'PRICE': [10,20,30,40,50,60], 'HP': 3},
@@ -811,13 +818,9 @@ class Game:
 			self.pause = 5
 			database.MAP += 1
 			self.transiction(True,210)
-			if database.MAP < 2:
+			if database.MAP < 3:
 				if database.MAP == 1: self.etext = 'SEGUNDO ANDAR'
 				if database.MAP == 2: self.etext = 'TERCEIRO ANDAR'
-				if database.MAP == 3: self.etext = 'QUARTO ANDAR'
-				if database.MAP == 4: self.etext = 'QUINTO ANDAR'
-				if database.MAP == 5: self.etext = 'SEXTO ANDAR'
-				if database.MAP == 6: self.etext = 'SÉTIMO ANDAR'
 				while self.elevator > 0:
 					self.elevator -= 5
 					self.run()
@@ -938,9 +941,14 @@ class Game:
 			if self.bullets[i]['DESTROY'] == False and len(self.en) > 0:
 				get = False
 				for e in range(len(self.en)):
-					if self.en[e]['MOVE'] == self.bullets[i]['TARGET'] and self.en[e]['N'] == self.bullets[i]['FIND']: self.bullets[i]['FOLLOW'] = self.en[e]['RECT']; get = True; break
-				if get == False:
-					self.bullets[i]['DESTROY'] = True
+					if self.en[e]['MOVE'] == self.bullets[i]['TARGET'] and self.en[e]['N'] == self.bullets[i]['FIND']:
+						self.bullets[i]['FOLLOW'] = self.en[e]['RECT']
+						get = True
+						break
+				if get == False and len(self.en) > 0:
+					self.bullets[i]['FOLLOW'] = self.en[0]['RECT']
+					#self.bullets[i]['DESTROY'] = True
+					print(f"VISE {i}")
 				if self.bullets[i]['FOLLOW'] == None: self.bullets[i]['FOLLOW'] = self.en[0]['RECT']
 				if self.pause < 3:
 					if self.bullets[i]['RECT'].x < self.bullets[i]['FOLLOW'].x: self.bullets[i]['RECT'].x += 5
@@ -1022,16 +1030,17 @@ class Game:
 
 		#MONEY & LIFE
 		pygame.draw.rect(self.display, (10,10,10), pygame.Rect(0,0,self.displayzw,55))
-		self.display.blit(self.monotype.render('$' + str(database.MONEY), True, (250,250,250)),(10, 30))
+		self.display.blit(self.monotype.render('$' + str(database.MONEY), True, (250,250,250)),(20, 15))
 
 		if self.player['HPLOSS'] > self.player['HP']: self.player['HPLOSS'] -= 0.1
-		pygame.draw.rect(self.display, (250,250,250), pygame.Rect(10,10,80,20))
+		'''pygame.draw.rect(self.display, (250,250,250), pygame.Rect(10,10,80,20))
 		if self.player['HPLOSS'] > 0:
 			pygame.draw.rect(self.display, (245,245,0), pygame.Rect(10,10,int(80/(10/self.player['HPLOSS'])),15))
 			pygame.draw.rect(self.display, (216,151,30), pygame.Rect(10,25,int(80/(10/self.player['HPLOSS'])),5))
 		if self.player['HP'] > 0:
 			pygame.draw.rect(self.display, (245,78,65), pygame.Rect(10,10,int(80/(10/self.player['HP'])),15))
-			pygame.draw.rect(self.display, (216,67,92), pygame.Rect(10,25,int(80/(10/self.player['HP'])),5))
+			pygame.draw.rect(self.display, (216,67,92), pygame.Rect(10,25,int(80/(10/self.player['HP'])),5))'''
+		
 		if self.player['LIFES'] > 0:
 			for i in range(self.player['LIFES']):
 				self.display.blit(pygame.image.load('Sprites/life.png'),(520 + (i * 20), 20))
@@ -1113,7 +1122,7 @@ class Game:
 			self.display.blit(rct,(329 - l1,20 + self.txty))
 			#pygame.draw.rect(self.display, (250, 250, 250), pygame.Rect(329 - l1,20 + self.txty,l1 + 20,50))
 			self.display.blit(self.monotype.render(self.text, True, (10,10,10)),(339 - l1, 30 + self.txty))
-			if self.txty > 150 and self.txty < 240: self.txty -= 2
+			if self.txty > 150 and self.txty < 240: self.txty -= 1
 			elif self.txty >= 240: self.txty -= 20
 			elif self.player['LIFES'] != 0: self.txty -= 20
 			if self.txty == -100:
@@ -1123,7 +1132,7 @@ class Game:
 
 		#TITLE
 		if self.mnu == 1:
-			self.display.blit(self.monotype.render('Criado por Matt Kai', True, (250,250,250)),(200,150))
+			self.display.blit(self.monotype.render('Criado por Ewerton Bramos', True, (250,250,250)),(200,150))
 			self.display.blit(self.monotype.render('Twitter/GitHub: @KaiXtr', True, (250,250,250)),(200,170))
 			self.display.blit(self.monotype.render('Feito em Python', True, (250,250,250)),(200,190))
 			self.display.blit(self.monotype.render('Para #corona_jam (2020)', True, (250,250,250)),(200,210))

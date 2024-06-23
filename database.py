@@ -41,14 +41,14 @@ TRAPS = [
 {'PRICE': [10,20,30,40,50,60], 'HP': 3},
 {'PRICE': [20,30,60,90,120,150], 'HP': 8},
 {'PRICE': [50,40,80,120,150,180], 'HP': 5},
-{'PRICE': [70,30,60,90,120,150], 'HP': 10},
+{'PRICE': [70,40,80,90,100,120], 'HP': 10},
 {'PRICE': [150,50,100,150,200,250], 'HP': 12},
 ]
 
 ROBOTS = [
-{'HP': 5, 'DAMAGE': 2, 'SPD': 1, 'SPRITE': 'ROBOT_2'},
+{'HP': 4, 'DAMAGE': 2, 'SPD': 1, 'SPRITE': 'ROBOT_2'},
 {'HP': 3, 'DAMAGE': 1, 'SPD': 2, 'SPRITE': 'ROBOT_0'},
-{'HP': 8, 'DAMAGE': 2, 'SPD': 3, 'SPRITE': 'ROBOT_1'},
+{'HP': 4, 'DAMAGE': 2, 'SPD': 2, 'SPRITE': 'ROBOT_1'},
 {'HP': 8, 'DAMAGE': 2, 'SPD': 1, 'SPRITE': 'ROBOT_4'},
 {'HP': 10, 'DAMAGE': 3, 'SPD': 1, 'SPRITE': 'ROBOT_3'},
 {'HP': 20, 'DAMAGE': 2, 'SPD': 1, 'SPRITE': 'ROBOT_5'},
