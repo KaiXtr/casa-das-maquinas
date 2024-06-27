@@ -9,16 +9,16 @@ class Game:
 	def __init__(self):
 		pygame.init()
 		pygame.display.set_caption('Casa das Máquinas')
-		pygame.display.set_icon(pygame.image.load('icon.ico'))
+		pygame.display.set_icon(database.getImg('icon.ico'))
 		pygame.mouse.set_visible(False)
 
-		self.screenSize = (900,600)
-		self.rescale = 0.65
-		self.aniSpeed = 0.2
+		self.screenSize:int = (900,600)
+		self.rescale:float = 0.65
+		self.aniSpeed:float = 0.2
 
 		self.screen = pygame.display.set_mode(self.screenSize)
 		self.display = pygame.Surface((int(self.screenSize[0] * self.rescale), int(self.screenSize[1] * self.rescale)))
-		self.monotype = pygame.font.Font('Fonts/monotype.ttf', 15)
+		self.monotype = pygame.font.Font(database.getPath('Fonts/monotype.ttf'), 15)
 		
 		#MIXER
 		self.ch_sfx = pygame.mixer.Channel(0)
@@ -32,12 +32,12 @@ class Game:
 		self.rectdebug = False
 		
 		self.player = {'RECT': pygame.Rect(database.PX,database.PY,20,10), 'SPRITE': 'STAND', 'GIF': 0.0, 'HP': 10, 'HPLOSS': 10, 'LIFES': 3, 'DIRECTION': 0, 'SPD': 2, 'DMGTIM': 0}
-		self.pause = 3
-		self.text = ''
-		self.txty = 0
-		self.nxtlvl = 0
+		self.pause:int = 3
+		self.text:str = ''
+		self.txty:int = 0
+		self.nxtlvl:int = 0
 		self.glock = pygame.time.Clock()
-		self.FPS = 60
+		self.FPS:int = 60
 		self.displayzw = int(self.screenSize[0] * self.rescale)
 		self.displayzh = int(self.screenSize[1] * self.rescale)
 		self.winbar = 210
@@ -60,9 +60,9 @@ class Game:
 		self.tut = False
 		self.tutfa = 0
 		self.txtsrf = pygame.Surface((640,50))
-		for i in range(16): self.txtsrf.blit(pygame.image.load('Sprites/pattern.png'),(i * 40, 0))
+		for i in range(16): self.txtsrf.blit(database.getImg('Sprites/pattern.png'),(i * 40, 0))
 		self.tutsrf = pygame.Surface((320,160))
-		for i in range(10): self.tutsrf.blit(pygame.image.load('Sprites/gradient.png'),(i * 32, 0))
+		for i in range(10): self.tutsrf.blit(database.getImg('Sprites/gradient.png'),(i * 32, 0))
 		
 		self.en = []
 		self.encount = 0
@@ -99,24 +99,28 @@ class Game:
 		if self.pause < 3: i['IMAGE'] += self.aniSpeed
 		if i['IMAGE'] >= 2.0: i['IMAGE'] = 0.0
 
-		if i['CAPTURED'] != None:
-			found = False
-			for e in self.en:
-				if e['N'] == i['CAPTURED']:
-					i['RECT'].x = e['RECT'].x
-					i['RECT'].y = e['RECT'].y
-					found = True
-			if found == False: i['CAPTURED'] = None
 		if self.rectdebug == True: pygame.draw.rect(self.display, (255,0,0), i['RECT'])
-		self.display.blit(pygame.image.load('Sprites/shade.png'),(i['RECT'].x - self.cam.x - 1,i['RECT'].y - self.cam.y + int(i['RECT'].height/2) - 2))
+		self.display.blit(database.getImg('Sprites/shade.png'),(i['RECT'].x - self.cam.x - 1,i['RECT'].y - self.cam.y + int(i['RECT'].height/2) - 2))
 		if i['CAPTURED'] != None: ex = 6
 		else: ex = 0
-		self.display.blit(pygame.image.load('Sprites/victim_' + str(i['TYPE']) + '_' + str(math.floor(i['IMAGE'])) + '.png'),(i['RECT'].x - self.cam.x + 4,i['RECT'].y - self.cam.y - 19 - ex))
+		self.display.blit(database.getImg('Sprites/victim_' + str(i['TYPE']) + '_' + str(math.floor(i['IMAGE'])) + '.png'),(i['RECT'].x - self.cam.x + 4,i['RECT'].y - self.cam.y - 19 - ex))
 
+		found = False
 		for e in self.en:
 			if self.colide(i['RECT'],e['RECT']) and i['CAPTURED'] == None:
 				e['REVERSE'] = True
 				i['CAPTURED'] = e['N']
+
+			if i['CAPTURED'] != None:
+				if e['N'] == i['CAPTURED']:
+					i['RECT'].x = e['RECT'].x
+					i['RECT'].y = e['RECT'].y
+					found = True
+		
+		if found == False:
+			i['RECT'].x = i['STARTPOS'][0]
+			i['RECT'].y = i['STARTPOS'][1]
+			i['CAPTURED'] = None
 
 		for s in self.area:
 			if self.colide(i['RECT'],s) and self.pause == 0:
@@ -146,7 +150,7 @@ class Game:
 
 		if i['SPRITE'] == 'ROBOT_1': ex = 20
 		else: ex = 0
-		self.display.blit(pygame.image.load('Sprites/shade.png'),(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y - ex + int(i['RECT'].height/2)))
+		self.display.blit(database.getImg('Sprites/shade.png'),(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y - ex + int(i['RECT'].height/2)))
 		img = database.SPRITES[i['SPRITE']][math.floor(i['GIF'])]
 		self.display.blit(img,(i['RECT'].x - (round(img.get_rect().width/2) - 10) - self.cam.x,i['RECT'].y - (img.get_rect().height - 12) - self.cam.y - ex))
 		if i['DMGTIM'] > 50 and i['DMGTIM'] < 80 and i['TYPE'] == 4:
@@ -264,7 +268,7 @@ class Game:
 			i['GRAVITY'] -= self.aniSpeed
 		
 		img = database.SPRITES[sprite][math.floor(i['GIF'])]
-		self.display.blit(pygame.image.load('Sprites/shade.png'),(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y))
+		self.display.blit(database.getImg('Sprites/shade.png'),(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y))
 		self.display.blit(img,(i['RECT'].x - self.cam.x + int(img.get_rect().width/2),i['RECT'].y - self.cam.y - i['JUMP'] - int(img.get_rect().height/2)))
 		
 		#GET ITEM
@@ -298,10 +302,10 @@ class Game:
 		if i['SHK'] > 0: i['SHK'] = -i['SHK']
 		elif i['SHK'] < 0: i['SHK'] = -i['SHK'] - 1
 
-		img = pygame.image.load('Sprites/trap_' + str(i['TYPE']) + '_' + str(d - 1) + '.png')
+		img = database.getImg('Sprites/trap_' + str(i['TYPE']) + '_' + str(d - 1) + '.png')
 		i['RECT'].width = img.get_rect().width
 		i['RECT'].height = img.get_rect().height
-		if i['TYPE'] != 3: self.display.blit(pygame.image.load('Sprites/shade.png'),(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y + int(img.get_rect().height) - 5))
+		if i['TYPE'] != 3: self.display.blit(database.getImg('Sprites/shade.png'),(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y + int(img.get_rect().height) - 5))
 		self.display.blit(img,(i['RECT'].x - self.cam.x + i['SHK'],i['RECT'].y - self.cam.y))
 
 		#BULLETS
@@ -319,7 +323,7 @@ class Game:
 				else: e = self.en[0]['N']
 				if i['TYPE'] == 5: explosion = True; ex = 5
 				else: explosion = False; ex = 1
-				self.bullets.append({'DIRECTION': d, 'DAMAGE': ((i['TYPE'] - 2) * i['UPGRADE']) + ex, 'RECT': pygame.Rect(i['RECT'].x + 5,i['RECT'].y,10,10), 'DESTROY': False, 'TRLTIM': 10, 'TARGET': t, 'FOLLOW': self.en[0]['RECT'], 'FIND': e, 'EXPLODE': explosion})
+				self.bullets.append({'DIRECTION': d, 'DAMAGE': (i['POWER'] * i['UPGRADE']) + ex, 'RECT': pygame.Rect(i['RECT'].x + 5,i['RECT'].y,10,10), 'DESTROY': False, 'TRLTIM': 10, 'TARGET': t, 'FOLLOW': self.en[0]['RECT'], 'FIND': e, 'EXPLODE': explosion})
 				self.ch_ton.play(database.SOUND['BULLET'])
 				i['TIME'] = 60 - (10 * i['UPGRADE'])
 
@@ -354,8 +358,8 @@ class Game:
 		elif i['DRTIM'] > 0: oc = False; i['DRTIM'] -= 1
 		else: oc = True
 		if self.pause == 3: oc = True
-		self.display.blit(pygame.image.load('Sprites/door_' + str(oc).lower() + '.png'),(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y))
-		if oc == False: self.display.blit(pygame.image.load('Sprites/door_shine.png'),(i['RECT'].x - self.cam.x + 7,i['RECT'].y - self.cam.y + 45))
+		self.display.blit(database.getImg('Sprites/door_' + str(oc).lower() + '.png'),(i['RECT'].x - self.cam.x,i['RECT'].y - self.cam.y))
+		if oc == False: self.display.blit(database.getImg('Sprites/door_shine.png'),(i['RECT'].x - self.cam.x + 7,i['RECT'].y - self.cam.y + 45))
 
 		if i['OPNCLS'] == False and self.pause < 3 and len(self.en) < 10:
 			i['SPAWN'] -= 1
@@ -449,6 +453,7 @@ class Game:
 						self.cursor = 1
 						for i in self.traps:
 							if self.colide(i['RECT'],self.mp):
+								#ATUALIZAR ARMADILHA
 								if i['UPGRADE'] < 5:
 									up = True
 									if database.MONEY >= database.TRAPS[i['TYPE'] - 1]['PRICE'][i['UPGRADE'] + 1]:
@@ -467,6 +472,8 @@ class Game:
 							can = False
 							for s in self.area:
 								if self.colide(self.mp,s): can = True
+
+							#COMPRAR ARMADILHA
 							if can == True:
 								database.MONEY -= database.TRAPS[self.tindex - 1]['PRICE'][0]
 								database.TRAPS[self.tindex - 1]['PRICE'][0] += int(database.TRAPS[self.tindex - 1]['PRICE'][0]/2)
@@ -476,7 +483,7 @@ class Game:
 								else: ya = 0
 								ref = database.TRAPS[self.tindex - 1].copy()
 								self.ch_sfx.play(database.SOUND['BUY'])
-								self.traps.append({'N': len(self.traps), 'RECT': pygame.Rect(xa - self.cam.x + 5,ya - self.cam.y + 5,10,10),'TYPE': self.tindex, 'HP': ref['HP'],
+								self.traps.append({'N': len(self.traps), 'RECT': pygame.Rect(xa - self.cam.x + 5,ya - self.cam.y + 5,10,10),'TYPE': self.tindex, 'HP': ref['HP'], 'POWER': ref['POWER'],
 									'MAXHP': ref['HP'], 'HPLOSS': ref['HP'], 'DMGSHW': 0, 'SHK': 0, 'TIME': 80, 'UPGRADE': 0, 'UPGSHW': 0, 'GIF': 0})
 								self.objects.append([5,len(self.traps) - 1,ya])
 								self.trapset = ''
@@ -495,7 +502,7 @@ class Game:
 							self.pause = 2
 							self.rendermap('level_' + str(database.MAP))
 							self.transiction(False,0)
-							self.ch_msc.play(database.SOUND['MAIN'])
+							self.ch_msc.play(database.SOUND['MAIN'],-1)
 							self.pause = 0
 
 					elif event.button == 3:
@@ -581,32 +588,14 @@ class Game:
 						while self.logalpha > 0:
 							self.logalpha -= 5
 							self.run()
+
+						database.MAP =  0
+						database.MONEY = 30
+						database.WAVES = [1,5]
+
 						self.__init__()
  
 		self.pressed = pygame.key.get_pressed()
-		if self.pause == 0:
-			'''if self.pressed[pygame.K_w]:
-				self.player['DIRECTION'] = 4
-			elif self.pressed[pygame.K_s]:
-				self.player['DIRECTION'] = 2
-			elif self.pressed[pygame.K_a]:
-				self.player['DIRECTION'] = 3
-			elif self.pressed[pygame.K_d]:
-				self.player['DIRECTION'] = 1
-			else: self.player['DIRECTION'] = 0
-
-			if self.colide(self.player, self.tilrect) == False:
-				if self.player['DIRECTION'] == 4:
-					self.player['SPRITE'] = 'UP'; self.player['RECT'].y -= self.player['SPD']
-				elif self.player['DIRECTION'] == 2:
-					self.player['SPRITE'] = 'DOWN'; self.player['RECT'].y += self.player['SPD']
-				elif self.player['DIRECTION'] == 3:
-					self.player['SPRITE'] = 'LEFT'; self.player['RECT'].x -= self.player['SPD']
-				elif self.player['DIRECTION'] == 1:
-					self.player['SPRITE'] = 'RIGHT'; self.player['RECT'].x += self.player['SPD']
-			else: self.player['DIRECTION'] = 0
-			if self.player['DIRECTION'] == 0:
-				self.player['SPRITE'] = 'STAND'''
 
 		if self.cursor == 1 and self.mnu == 2 and self.opt == 1:
 			sb1 = pygame.Rect(260,165,110,15)
@@ -685,7 +674,7 @@ class Game:
 				self.run()
 				
 	def rendermap(self, mp):
-		self.map = pytmx.load_pygame('Maps/' + mp + '.tmx')
+		self.map = pytmx.load_pygame(database.getPath('Maps/' + mp + '.tmx'))
 		self.room = mp
 		self.cam.x = 0
 		self.cam.y = 0
@@ -708,13 +697,7 @@ class Game:
 		database.ENEMIES = [0,10]
 		database.WAVES = [1,3 + (database.MAP * 2)]
 		database.MONEY = database.VICTIMS[0] * 20
-		database.TRAPS = [
-		{'PRICE': [10,20,30,40,50,60], 'HP': 3},
-		{'PRICE': [20,40,60,80,100,120], 'HP': 8},
-		{'PRICE': [50,30,60,90,120,150], 'HP': 5},
-		{'PRICE': [70,20,30,40,50,60], 'HP': 10},
-		{'PRICE': [150,50,100,150,200,250], 'HP': 12},
-		]
+		database.resetTraps()
 
 		#DRAW MAP
 		for i in range(3):
@@ -739,7 +722,7 @@ class Game:
 		ind = 0
 		for i in range(len(self.map.layers[5])):
 			obj = self.map.get_object_by_name('victim_' + str(i))
-			self.victims.append({'N': ind, 'RECT': pygame.Rect(int(obj.x), int(obj.y), 20, 15), 'TYPE': int(obj.type),
+			self.victims.append({'N': ind, 'RECT': pygame.Rect(int(obj.x), int(obj.y), 20, 15), 'TYPE': int(obj.type), 'STARTPOS': (int(obj.x),int(obj.y)),
 			'IMAGE': 0.0,'MOVE': 'horizontal','DIRECTION': 0,'SPD': 1, 'TIME': 20,'FOLLOW': None,'FOLLEND': 0,'GET': False,'CAPTURED': None})
 			self.objects.append([2,ind,int(obj.y)])
 			ind += 1
@@ -804,7 +787,7 @@ class Game:
 				database.VICTIMS = [1,0]
 				self.rendermap('level_' + str(database.MAP))
 				self.transiction(False,0)
-				self.ch_msc.play(database.SOUND['MAIN'])
+				self.ch_msc.play(database.SOUND['MAIN'],-1)
 				self.pause = 0
 			else:
 				self.ch_msc.play(database.SOUND['GAMEOVER'],-1)
@@ -827,7 +810,7 @@ class Game:
 				self.etext = ''
 				self.elevator = 430
 				self.rendermap('level_' + str(database.MAP))
-				self.ch_msc.play(database.SOUND['MAIN'])
+				self.ch_msc.play(database.SOUND['MAIN'],-1)
 				self.transiction(False,0)
 				self.text = 'ONDA 1'
 				self.txty = 400
@@ -873,19 +856,9 @@ class Game:
 				if self.pause == 3: self.player['DMGTIM'] = 0
 				if self.player['DMGTIM'] % 2 == 0:
 					if self.rectdebug == True: pygame.draw.rect(self.display, (255,0,0), self.player['RECT'])
-					self.display.blit(pygame.image.load('Sprites/shade.png'),(self.player['RECT'].x - self.cam.x - 1,self.player['RECT'].y - self.cam.y + int(self.player['RECT'].height/2) - 2))
+					self.display.blit(database.getImg('Sprites/shade.png'),(self.player['RECT'].x - self.cam.x - 1,self.player['RECT'].y - self.cam.y + int(self.player['RECT'].height/2) - 2))
 					self.display.blit(database.SPRITES[self.player['SPRITE']][math.floor(self.player['GIF'])],(self.player['RECT'].x - self.cam.x,self.player['RECT'].y - self.cam.y - 25))
 					self.objects[y][2] = self.player['RECT'].y
-
-				#TILE COLISION
-				'''for t in range(2):
-					for i in self.tilrect[t]:
-						if self.colide(self.player['RECT'],i[1]) and self.pause == 0:
-							if i[0] != 'WALL' and i[0] != 'NONE' and self.player['DIRECTION'] != 0:
-								self.ch_stp.stop()
-								self.ch_stp.play(database.SOUND['STEP_' + i[0]])
-							if i[0] == 'GRASS':
-								if self.player['DMGTIM'] == 0: self.player['HP'] -= 1; self.player['DMGTIM'] = 20'''
 		
 			#OBJECTS
 			elif self.objects[y][0] == 1:
@@ -897,6 +870,8 @@ class Game:
 							del self.objects[y]
 							y -= 1
 							break
+					
+			#VICTIMS
 			elif self.objects[y][0] == 2:
 				for i in range(len(self.victims)):
 					if self.victims[i]['N'] == self.objects[y][1]:
@@ -906,9 +881,13 @@ class Game:
 							del self.objects[y]
 							y -= 1
 							break
+			
+			#DOORS
 			elif self.objects[y][0] == 3:
 				for i in self.doors:
 					if i['N'] == self.objects[y][1]: self.door(i); self.objects[y][2] = i['RECT'].y
+			
+			#TRAPS
 			elif self.objects[y][0] == 5:
 				for i in range(len(self.traps)):
 					if self.traps[i]['N'] == self.objects[y][1]:
@@ -947,8 +926,6 @@ class Game:
 						break
 				if get == False and len(self.en) > 0:
 					self.bullets[i]['FOLLOW'] = self.en[0]['RECT']
-					#self.bullets[i]['DESTROY'] = True
-					print(f"VISE {i}")
 				if self.bullets[i]['FOLLOW'] == None: self.bullets[i]['FOLLOW'] = self.en[0]['RECT']
 				if self.pause < 3:
 					if self.bullets[i]['RECT'].x < self.bullets[i]['FOLLOW'].x: self.bullets[i]['RECT'].x += 5
@@ -959,7 +936,7 @@ class Game:
 				if self.bullets[i]['TRLTIM'] == 0:
 					self.bullets[i]['TRLTIM'] = 3
 					#self.trail.append({'RECT': pygame.Rect(self.bullets[i]['RECT'].x - self.cam.x, self.bullets[i]['RECT'].y - self.cam.y,10,10), 'SCALE': 5})
-				self.display.blit(pygame.image.load('Sprites/bullet.png'), (self.bullets[i]['RECT'].x - self.cam.x, self.bullets[i]['RECT'].y - self.cam.y))
+				self.display.blit(database.getImg('Sprites/bullet.png'), (self.bullets[i]['RECT'].x - self.cam.x, self.bullets[i]['RECT'].y - self.cam.y))
 			else: del self.bullets[i]; break
 		for i in range(len(self.trail)):
 			if self.trail[i]['SCALE'] > 0:
@@ -986,13 +963,13 @@ class Game:
 			if self.mp.y > 30: ya = round((self.mp.y - 15)/30) * 30
 			else: ya = 0
 			srf = pygame.Surface((20,20), pygame.SRCALPHA).convert()
-			img = pygame.image.load('Sprites/trap_' + str(self.trapset) + '_0.png').convert()
+			img = database.getImg('Sprites/trap_' + str(self.trapset) + '_0.png').convert()
 			srf.blit(img,(0,0))
 			srf.set_alpha(150)
 			can = False
 			for s in self.area:
 				if self.colide(self.mp,s): can = True
-			self.display.blit(pygame.image.load('Sprites/trapset_' + str(math.floor(self.trapgif)) + '.png'),(xa - self.cam.x, ya - self.cam.y))
+			self.display.blit(database.getImg('Sprites/trapset_' + str(math.floor(self.trapgif)) + '.png'),(xa - self.cam.x, ya - self.cam.y))
 			if can == True: self.display.blit(srf,(xa - self.cam.x + 5, ya - self.cam.y))
 
 		#DAMAGE & UPGRADES
@@ -1033,22 +1010,15 @@ class Game:
 		self.display.blit(self.monotype.render('$' + str(database.MONEY), True, (250,250,250)),(20, 15))
 
 		if self.player['HPLOSS'] > self.player['HP']: self.player['HPLOSS'] -= 0.1
-		'''pygame.draw.rect(self.display, (250,250,250), pygame.Rect(10,10,80,20))
-		if self.player['HPLOSS'] > 0:
-			pygame.draw.rect(self.display, (245,245,0), pygame.Rect(10,10,int(80/(10/self.player['HPLOSS'])),15))
-			pygame.draw.rect(self.display, (216,151,30), pygame.Rect(10,25,int(80/(10/self.player['HPLOSS'])),5))
-		if self.player['HP'] > 0:
-			pygame.draw.rect(self.display, (245,78,65), pygame.Rect(10,10,int(80/(10/self.player['HP'])),15))
-			pygame.draw.rect(self.display, (216,67,92), pygame.Rect(10,25,int(80/(10/self.player['HP'])),5))'''
 		
 		if self.player['LIFES'] > 0:
 			for i in range(self.player['LIFES']):
-				self.display.blit(pygame.image.load('Sprites/life.png'),(520 + (i * 20), 20))
+				self.display.blit(database.getImg('Sprites/life.png'),(520 + (i * 20), 20))
 
 		#ENEMIES & VICTIMS
-		self.display.blit(pygame.image.load('Sprites/robot_0_0.png'),(300, 20))
+		self.display.blit(database.getImg('Sprites/robot_0_0.png'),(300, 20))
 		self.display.blit(self.monotype.render(str(database.ENEMIES[0]) + '/' + str(database.ENEMIES[1]), True, (250,250,250)),(330, 15))
-		self.display.blit(pygame.image.load('Sprites/victim_0_0.png'),(400, 15))
+		self.display.blit(database.getImg('Sprites/victim_0_0.png'),(400, 15))
 		self.display.blit(self.monotype.render(str(database.VICTIMS[0]) + '/' + str(database.VICTIMS[1]), True, (250,250,250)),(430, 15))
 
 		#TRAPS
@@ -1056,7 +1026,7 @@ class Game:
 			if database.MONEY >= database.TRAPS[i]['PRICE'][0]:
 				pygame.draw.rect(self.display, (250,250,250), pygame.Rect(100 + ((i) * 35),5,30,30))
 			else: pygame.draw.rect(self.display, (165,165,165), pygame.Rect(100 + ((i) * 35),5,30,30))
-			self.display.blit(pygame.image.load('Sprites/icon_' + str(i + 1) + '.png'),(100 + ((i) * 35),5))
+			self.display.blit(database.getImg('Sprites/icon_' + str(i + 1) + '.png'),(100 + ((i) * 35),5))
 			if self.tindex == i + 1:
 				pygame.draw.rect(self.display, (250,250,250), pygame.Rect(100 + ((i) * 35),35,30,20))
 				self.display.blit(self.monotype.render(str(database.TRAPS[i]['PRICE'][0]), True, (10,10,10)),(105 + ((i) * 35), 30))
@@ -1065,13 +1035,13 @@ class Game:
 
 		#BACKGROUND
 		if self.mnu != 3:
-			if self.ctb != None: self.display.blit(pygame.image.load('Sprites/' + self.ctb + '.png'),(0,0))
+			if self.ctb != None: self.display.blit(database.getImg('Sprites/' + self.ctb + '.png'),(0,0))
 			else: pygame.draw.rect(self.display,(0,0,0),pygame.Rect(0,0,self.displayzw,self.displayzh))
 		if self.opt == 10:
 			if self.logalpha < 255: self.logalpha += 10
 			srf = pygame.Surface((355,172), pygame.SRCALPHA, 32)
 			srf.convert_alpha()
-			img = pygame.image.load('Sprites/logo.png')
+			img = database.getImg('Sprites/logo.png')
 			img.set_alpha(self.logalpha)
 			srf.blit(img,(0,0))
 			self.display.blit(srf,(120, 100))
@@ -1092,10 +1062,10 @@ class Game:
 				else: l1 += 7
 			self.display.blit(self.monotype.render(self.etext, True, (250,250,250)),(250 - l1, 180))
 		if self.elevator > 0 and self.elevator < 430:
-			self.display.blit(pygame.image.load('Sprites/elevator.png'),(250,self.elevator - 25))
+			self.display.blit(database.getImg('Sprites/elevator.png'),(250,self.elevator - 25))
 			if database.MAP > 0:
-				for v in range(database.VICTIMS[0]): self.display.blit(pygame.image.load('Sprites/victim_0_0.png'),(265 + (v * 15),self.elevator - 43))
-			self.display.blit(pygame.image.load('Sprites/char_stand_0.png'),(290,self.elevator - 40))
+				for v in range(database.VICTIMS[0]): self.display.blit(database.getImg('Sprites/victim_0_0.png'),(265 + (v * 15),self.elevator - 43))
+			self.display.blit(database.getImg('Sprites/char_stand_0.png'),(290,self.elevator - 40))
 			
 		#TEXT
 		if self.text != '':
@@ -1140,7 +1110,7 @@ class Game:
 			if self.logalpha < 255: self.logalpha += 10
 			srf = pygame.Surface((355,172), pygame.SRCALPHA, 32)
 			srf.convert_alpha()
-			img = pygame.image.load('Sprites/logo.png')
+			img = database.getImg('Sprites/logo.png')
 			img.set_alpha(self.logalpha)
 			srf.blit(img,(0,0))
 			self.display.blit(srf,(120, 100))
@@ -1162,7 +1132,7 @@ class Game:
 		#DIALOGS
 		if self.dlg != []:
 			self.display.blit(self.monotype.render(self.dlg[0], True, (250,250,250)),(100,360))
-			if self.dlgping % 5 == 0: self.display.blit(pygame.image.load('Sprites/ping.png'),(480,365))
+			if self.dlgping % 5 == 0: self.display.blit(database.getImg('Sprites/ping.png'),(480,365))
 
 		#TUTORIAL
 		if self.tutfa > 0:
@@ -1209,7 +1179,7 @@ class Game:
 		if self.cam.x > (self.map.width * self.map.tilewidth) - self.displayzw: self.cam.x = (self.map.width * self.map.tilewidth) - self.displayzw
 		if self.cam.y > (self.map.height * self.map.tileheight) - self.displayzh: self.cam.y = (self.map.height * self.map.tileheight) - self.displayzh'''
 
-		self.display.blit(pygame.image.load('Sprites/cursor_' + str(self.cursor) + '.png'),(self.mp.x,self.mp.y))
+		self.display.blit(database.getImg('Sprites/cursor_' + str(self.cursor) + '.png'),(self.mp.x,self.mp.y))
 		self.screen.blit(pygame.transform.scale(self.display, self.screenSize), (0, 0))
 		pygame.display.update()
 		pygame.display.flip()
