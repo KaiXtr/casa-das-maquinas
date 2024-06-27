@@ -1,10 +1,16 @@
-pyinstaller -F -i icon.ico ^
--n "casa_das_maquinas" ^
---add-data "C:/Users/Kai_Xtr/Documents/'Casa das Máquinas'/Maps/*;." ^
---add-data "C:/Users/Kai_Xtr/Documents/'Casa das Máquinas'/Fonts/*;." ^
---add-data "C:/Users/Kai_Xtr/Documents/'Casa das Máquinas'/Tiles/*;." ^
---add-data "C:/Users/Kai_Xtr/Documents/'Casa das Máquinas'/SFX/*;." ^
---add-data "C:/Users/Kai_Xtr/Documents/'Casa das Máquinas'/Sprites/*;." ^
---add-data "database.py;." ^
---add-data "icon.ico;." ^
+python -m pyinstaller ^
+--clean ^
+--onefile ^
+--noconfirm ^
+--windowed ^
+--workpath ".\build" ^
+--distpath ".\dist" ^
+--add-data ".\Fonts:.\Fonts" ^
+--add-data ".\Maps:.\Maps" ^
+--add-data ".\SFX:.\SFX" ^
+--add-data ".\Sprites:.\Sprites" ^
+--add-data ".\Tiles:.\Tiles" ^
+--add-data ".\icon.ico:." ^
+--name "Casa das Máquinas" ^
+--icon "icon.ico" ^
 main.py

@@ -1018,7 +1018,7 @@ class Game:
 
 				if self.colide(i['RECT'], self.mp) and i['HP'] == i['MAXHP']:
 					pygame.draw.rect(self.display,(10,10,10),pygame.Rect(posX, i['RECT'].y - self.cam.y - 25,60,15))
-					self.display.blit(self.monotype.render(f'nível {i['UPGRADE']}',True,(250,250,250)),(posX + 5, i['RECT'].y - self.cam.y - 30))
+					self.display.blit(self.monotype.render(f"nível {i['UPGRADE']}",True,(250,250,250)),(posX + 5, i['RECT'].y - self.cam.y - 30))
 					if i['UPGRADE'] < 5:
 						color = (10,250,10) if (database.MONEY >= database.TRAPS[i['TYPE'] - 1]['PRICE'][i['UPGRADE'] + 1]) else (250,10,10)
 						pygame.draw.rect(self.display,color,pygame.Rect(posX, i['RECT'].y - self.cam.y - 10,60,15))
