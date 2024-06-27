@@ -477,6 +477,7 @@ class Game:
 									up = True
 									self.ch_sfx.play(database.SOUND['REPAIR'])
 									i['HP'] = i['MAXHP']
+									i['DMGSHW'] = 0
 									database.MONEY -= 10
 
 								#MELHORAR ARMADILHA
@@ -1014,12 +1015,18 @@ class Game:
 				posX = i['RECT'].x - self.cam.x - 10
 
 				if i['HPLOSS'] > i['HP']: i['HPLOSS'] -= 0.1
-				if i['DMGSHW'] > 0:
-					if i['DMGSHW'] < 10: a = (i['DMGSHW']/10) * 255
-					else: a = 255
-					pygame.draw.rect(self.display,(10,10,10,a),pygame.Rect(posX, i['RECT'].y - self.cam.y - 25,60,15))
-					if i['HPLOSS'] > 0: pygame.draw.rect(self.display,(245,245,0,a),pygame.Rect(posX, i['RECT'].y - self.cam.y - 25,int(60/(i['MAXHP']/i['HPLOSS'])),15))
-					if i['HP'] > 0: pygame.draw.rect(self.display,(245,78,65,a),pygame.Rect(posX, i['RECT'].y - self.cam.y - 25,int(60/(i['MAXHP']/i['HP'])),15))
+
+				if self.colide(i['RECT'], self.mp) and i['HP'] == i['MAXHP']:
+					pygame.draw.rect(self.display,(10,10,10),pygame.Rect(posX, i['RECT'].y - self.cam.y - 25,60,15))
+					self.display.blit(self.monotype.render(f'nível {i['UPGRADE']}',True,(250,250,250)),(posX + 5, i['RECT'].y - self.cam.y - 30))
+					if i['UPGRADE'] < 5:
+						color = (10,250,10) if (database.MONEY >= database.TRAPS[i['TYPE'] - 1]['PRICE'][i['UPGRADE'] + 1]) else (250,10,10)
+						pygame.draw.rect(self.display,color,pygame.Rect(posX, i['RECT'].y - self.cam.y - 10,60,15))
+						self.display.blit(self.monotype.render('$' + str(database.TRAPS[i['TYPE'] - 1]['PRICE'][i['UPGRADE'] + 1]),True,(10,10,10)),(posX + 5, i['RECT'].y - self.cam.y - 17))
+				elif i['DMGSHW'] > 0 or self.colide(i['RECT'], self.mp):
+					pygame.draw.rect(self.display,(10,10,10),pygame.Rect(posX, i['RECT'].y - self.cam.y - 25,60,15))
+					if i['HPLOSS'] > 0: pygame.draw.rect(self.display,(245,245,0),pygame.Rect(posX, i['RECT'].y - self.cam.y - 25,int(60/(i['MAXHP']/i['HPLOSS'])),15))
+					if i['HP'] > 0: pygame.draw.rect(self.display,(245,78,65),pygame.Rect(posX, i['RECT'].y - self.cam.y - 25,int(60/(i['MAXHP']/i['HP'])),15))
 
 					if self.colide(i['RECT'], self.mp):
 						self.display.blit(self.monotype.render('reparar',True,(250,250,250)),(posX + 5, i['RECT'].y - self.cam.y - 30))
@@ -1028,14 +1035,6 @@ class Game:
 						pygame.draw.rect(self.display,color,pygame.Rect(posX, i['RECT'].y - self.cam.y - 10,60,15))
 						self.display.blit(self.monotype.render('$10',True,(10,10,10)),(posX + 5, i['RECT'].y - self.cam.y - 17))
 					i['DMGSHW'] -= 1
-
-				elif self.colide(i['RECT'], self.mp):
-					pygame.draw.rect(self.display,(10,10,10),pygame.Rect(posX, i['RECT'].y - self.cam.y - 25,60,15))
-					self.display.blit(self.monotype.render(f'nível {i['UPGRADE']}',True,(250,250,250)),(posX + 5, i['RECT'].y - self.cam.y - 30))
-					if i['UPGRADE'] < 5:
-						color = (10,250,10) if (database.MONEY >= database.TRAPS[i['TYPE'] - 1]['PRICE'][i['UPGRADE'] + 1]) else (250,10,10)
-						pygame.draw.rect(self.display,color,pygame.Rect(posX, i['RECT'].y - self.cam.y - 10,60,15))
-						self.display.blit(self.monotype.render('$' + str(database.TRAPS[i['TYPE'] - 1]['PRICE'][i['UPGRADE'] + 1]),True,(10,10,10)),(posX + 5, i['RECT'].y - self.cam.y - 17))
 
 		#MONEY & LIFE
 		pygame.draw.rect(self.display, (10,10,10), pygame.Rect(0,0,self.displayzw,55))
