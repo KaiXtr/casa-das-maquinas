@@ -1,7 +1,12 @@
 ﻿# Casa das Máquinas
 Jogo desenvolvido para o concurso Corona Jam de 2020.
 
-![casadasmaquinas](https://github.com/KaiXtr/casa-das-maquinas/assets/42985693/2d95d237-d432-4075-8940-eb5e77a83a46)
+## Como jogar
+Seu objetivo é proteger um grupo de 5 cientistas de um laboratório de robôs que foram hackeados por um vírus de computador, comprando e colocando máquinas para atacar os robôs que passam pelo caminho. Faça consertos e melhorias nas máquinas para que consigam lidar com mais e mais ondas de robôs em três fases distintas.
+
+![casadasmaquinas](https://github.com/KaiXtr/casa-das-maquinas/assets/42985693/d70bdcbf-0814-4cc6-99f1-5a4a2136cbc2)
+
+![Captura de tela de 2024-06-27 02-55-52](https://github.com/KaiXtr/casa-das-maquinas/assets/42985693/95a7684f-0edd-47ab-930f-4b4ad0e9712a)
 
 ### Nota para o concurso
 
