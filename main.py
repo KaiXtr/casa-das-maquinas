@@ -83,6 +83,7 @@ class Game:
 		self.area = []
 		self.tilemation = 0.0
 		self.etext = ''
+		self.nobutton = False
 
 		self.rendermap('level_0')
 		for i in range(10): self.run()
@@ -110,6 +111,10 @@ class Game:
 			if self.colide(i['RECT'],e['RECT']) and i['CAPTURED'] == None:
 				e['REVERSE'] = True
 				i['CAPTURED'] = e['N']
+				if e['DIRECTION'] == 3:
+					e['DIRECTION'] = 1
+				if e['DIRECTION'] == 2:
+					e['DIRECTION'] = 4
 
 			if i['CAPTURED'] != None:
 				if e['N'] == i['CAPTURED']:
@@ -118,8 +123,6 @@ class Game:
 					found = True
 		
 		if found == False:
-			i['RECT'].x = i['STARTPOS'][0]
-			i['RECT'].y = i['STARTPOS'][1]
 			i['CAPTURED'] = None
 
 		for s in self.area:
@@ -366,10 +369,10 @@ class Game:
 			if i['SPAWN'] == 0:
 				#self.ch_ton.play(database.SOUND['SPAWN'])
 				lmt = database.MAP
-				if database.WAVES[0] >= int(database.WAVES[1]/2): lmt += 1
-				tp = round(random.randint(0,lmt))
+				if database.WAVES[0] >= int(database.WAVES[1] * 0.3): lmt += 1
+				tp = round(random.randint(0 if (database.MAP < 2) else 1,lmt))
 				rb = database.ROBOTS[tp].copy()
-				rb['HP'] *= database.WAVES[0]
+				rb['HP'] = rb['HP'] * int((database.WAVES[0] * 1.5) + database.MAP)
 				rb['N'] = self.encount
 				rb['TYPE'] = tp
 				rb['MAXHP'] = rb['HP']
@@ -476,7 +479,7 @@ class Game:
 							#COMPRAR ARMADILHA
 							if can == True:
 								database.MONEY -= database.TRAPS[self.tindex - 1]['PRICE'][0]
-								database.TRAPS[self.tindex - 1]['PRICE'][0] += int(database.TRAPS[self.tindex - 1]['PRICE'][0]/2)
+								database.TRAPS[self.tindex - 1]['PRICE'][0] = int(database.TRAPS[self.tindex - 1]['PRICE'][0] * 1.75)
 								if self.mp.x > 30: xa = round((self.mp.x - 15)/30) * 30
 								else: xa = 0
 								if self.mp.y > 30: ya = round((self.mp.y - 15)/30) * 30
@@ -488,26 +491,16 @@ class Game:
 								self.objects.append([5,len(self.traps) - 1,ya])
 								self.trapset = ''
 							else: self.ch_ton.play(database.SOUND['ERROR'])
-					elif event.button == 2:
-						if self.player['LIFES'] > 0 and self.pause == 0:
-							self.player['LIFES'] -= 1
-							self.ch_msc.play(database.SOUND['LOST'])
-							self.pause = 3
-							self.transiction(True,210)
-							self.player['RECT'].x = database.PX
-							self.player['RECT'].y = database.PY
-							self.player['HP'] = 10
-							self.player['HPLOSS'] = 10
-							database.MONEY = database.STMONEY[database.WAVES[0]]
-							self.pause = 2
-							self.rendermap('level_' + str(database.MAP))
-							self.transiction(False,0)
-							self.ch_msc.play(database.SOUND['MAIN'],-1)
-							self.pause = 0
-
 					elif event.button == 3:
-						self.ch_sfx.play(database.SOUND['CANCEL'])
-						self.trapset = ''
+						up = False
+						self.cursor = 1
+						for i in self.traps:
+							if self.colide(i['RECT'],self.mp):
+								#VENDER ARMADILHA
+								up = True
+								database.MONEY += database.TRAPS[i['TYPE'] - 1]['PRICE'][i['UPGRADE'] + 1]
+								self.ch_sfx.play(database.SOUND['BUY'])
+								i['HP'] = 0
 
 				elif self.mnu == 1:
 					if event.button == 1:
@@ -519,12 +512,13 @@ class Game:
 						if self.winbar == 55:
 							op1 = pygame.Rect(170,355,60,35)
 							op2 = pygame.Rect(310,355,70,35)
-							if self.colide(self.mp,op1):
+							if self.colide(self.mp,op1) and self.nobutton == False:
 								if self.tut == False:
 									self.ch_sfx.play(database.SOUND['OK'])
 									self.tut = True
 									self.opt = 0
 								else:
+									self.nobutton = True
 									self.ch_sfx.play(database.SOUND['OK'])
 									self.tut = False
 									self.ch_msc.fadeout(1500)
@@ -536,7 +530,7 @@ class Game:
 									self.etext = 'clique com o botão direito para pular'
 									for t in range(100): self.run()
 									self.etext = ''
-									self.dialog(['Sério que eu vou usar desenhos cagados do paint',1,'só pra pra fazer filminhos?',1,'vai ficar ó...',1])
+									self.dialog(['Sério que eu vou usar desenhos cagados do paint...',1,'...só pra pra fazer filminhos?',1,'vai ficar ó...',1])
 									self.ctb = 'background2'
 									self.dialog(['...uma bosta',1])
 									self.ch_msc.play(database.SOUND['CINEMATIC'],-1)
@@ -578,7 +572,7 @@ class Game:
 						elif self.ctb == 'background1' and self.opt != 10:
 							self.logalpha = 255
 							self.winbar = 55
-				elif self.mnu == 4:
+				elif self.mnu > 3:
 					if event.button == 1:
 						self.cursor = 1
 						self.mnu = 5
@@ -614,21 +608,20 @@ class Game:
 	
 	def dialog(self, tx):
 		self.dlg = []
-		txt = tx
-		tid = 0
-		did = 0
-		spd = 10
+		txt:str = tx
+		tid:int = 0
+		spd:bool = True
 
 		while tid < len(txt) and self.mnu < 3:
 			if isinstance(txt[tid], str):
 				self.dlg.append('')
 				for i in txt[tid]:
 					while True:
-						if spd > 0: spd = 0
+						if spd: spd = False
 						else:
 							self.ch_sfx.play(database.SOUND['TEXT'])
 							self.dlg[0] += i
-							spd = 10
+							spd = True
 							break
 						self.run()
 			elif txt[tid] == 1:
@@ -644,7 +637,7 @@ class Game:
 
 	def wait(self):
 		waiting = True
-		while waiting == True:
+		while waiting:
 			self.dlgping += 1
 			if self.dlgping > 10: self.dlgping = 0
 			self.mp = pygame.Rect(round(pygame.mouse.get_pos()[0] * self.rescale),round(pygame.mouse.get_pos()[1] * self.rescale),3,3)
@@ -663,7 +656,7 @@ class Game:
 						self.winbar = 210
 						self.mnu = 3
 
-	def transiction(self, fade, limit, spd=5):
+	def transiction(self, fade:bool, limit:int, spd:int=5):
 		if fade == False:
 			while self.winbar > limit:
 				self.winbar -= spd
@@ -673,8 +666,8 @@ class Game:
 				self.winbar += spd
 				self.run()
 				
-	def rendermap(self, mp):
-		self.map = pytmx.load_pygame(database.getPath('Maps/' + mp + '.tmx'))
+	def rendermap(self, mp:str):
+		self.map = pytmx.load_pygame(database.getPath(f'Maps/{mp}.tmx'))
 		self.room = mp
 		self.cam.x = 0
 		self.cam.y = 0
@@ -722,7 +715,7 @@ class Game:
 		ind = 0
 		for i in range(len(self.map.layers[5])):
 			obj = self.map.get_object_by_name('victim_' + str(i))
-			self.victims.append({'N': ind, 'RECT': pygame.Rect(int(obj.x), int(obj.y), 20, 15), 'TYPE': int(obj.type), 'STARTPOS': (int(obj.x),int(obj.y)),
+			self.victims.append({'N': ind, 'RECT': pygame.Rect(int(obj.x), int(obj.y), 20, 15), 'TYPE': int(obj.type),
 			'IMAGE': 0.0,'MOVE': 'horizontal','DIRECTION': 0,'SPD': 1, 'TIME': 20,'FOLLOW': None,'FOLLEND': 0,'GET': False,'CAPTURED': None})
 			self.objects.append([2,ind,int(obj.y)])
 			ind += 1
@@ -792,7 +785,7 @@ class Game:
 			else:
 				self.ch_msc.play(database.SOUND['GAMEOVER'],-1)
 				self.pause = 3
-				self.mnu = 4
+				self.mnu = 5
 				self.text = 'Fim de Jogo'
 				self.txty = 400
 
@@ -1034,8 +1027,8 @@ class Game:
 		i += 1
 
 		#BACKGROUND
-		if self.mnu != 3:
-			if self.ctb != None: self.display.blit(database.getImg('Sprites/' + self.ctb + '.png'),(0,0))
+		if self.mnu not in (3,5):
+			if self.ctb != None: self.display.blit(database.getImg(f'Sprites/{self.ctb}.png'),(0,0))
 			else: pygame.draw.rect(self.display,(0,0,0),pygame.Rect(0,0,self.displayzw,self.displayzh))
 		if self.opt == 10:
 			if self.logalpha < 255: self.logalpha += 10
