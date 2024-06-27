@@ -7,6 +7,8 @@ import sys
 
 class Game:
 	def __init__(self):
+		print(f"Casa das Máquinas v.1.0 - Ewerton Bramos 2020-2024")
+
 		pygame.init()
 		pygame.display.set_caption('Casa das Máquinas')
 		pygame.display.set_icon(database.getImg('icon.ico'))
@@ -15,6 +17,10 @@ class Game:
 		self.screenSize:int = (900,600)
 		self.rescale:float = 0.65
 		self.aniSpeed:float = 0.2
+
+		self.displayzw = int(self.screenSize[0] * self.rescale)
+		self.displayzh = int(self.screenSize[1] * self.rescale)
+		self.cam = pygame.Rect(0,0,self.displayzw,self.displayzh)
 
 		self.screen = pygame.display.set_mode(self.screenSize)
 		self.display = pygame.Surface((int(self.screenSize[0] * self.rescale), int(self.screenSize[1] * self.rescale)))
@@ -30,19 +36,21 @@ class Game:
 		self.ch_stp = pygame.mixer.Channel(3)
 		self.ch_stp.set_volume(database.SFX)
 		self.rectdebug = False
-		self.guimoney = 0
+
+		self.glock = pygame.time.Clock()
+		self.FPS:int = 60
+		self.setUp()
 		
+	def setUp(self):
+		self.ch_msc.set_volume(database.MSC)
+		
+		self.guimoney = 0
 		self.player = {'RECT': pygame.Rect(database.PX,database.PY,20,10), 'SPRITE': 'STAND', 'GIF': 0.0, 'HP': 10, 'HPLOSS': 10, 'LIFES': 3, 'DIRECTION': 0, 'SPD': 2, 'DMGTIM': 0}
 		self.pause:int = 3
 		self.text:str = ''
 		self.txty:int = 0
 		self.nxtlvl:int = 0
-		self.glock = pygame.time.Clock()
-		self.FPS:int = 60
-		self.displayzw = int(self.screenSize[0] * self.rescale)
-		self.displayzh = int(self.screenSize[1] * self.rescale)
 		self.winbar = 210
-		self.cam = pygame.Rect(0,0,self.displayzw,self.displayzh)
 		self.speakin = 0
 		self.opt = 0
 		self.lopt = 0
@@ -345,8 +353,8 @@ class Game:
 				i['SPAWN'] = 0
 			else:
 				i['SPAWN'] = 300
-				database.WAVES[0] += 1
 				if database.WAVES[0] < database.WAVES[1]:
+					database.WAVES[0] += 1
 					self.text = 'ONDA ' + str(database.WAVES[0])
 					database.ENEMIES[0] = 0
 					database.ENEMIES[1] += 5 * database.WAVES[0]
@@ -505,7 +513,7 @@ class Game:
 								ref = database.TRAPS[self.tindex - 1].copy()
 								self.ch_sfx.play(database.SOUND['BUY'])
 								self.traps.append({'N': len(self.traps), 'RECT': pygame.Rect(xa - self.cam.x + 5,ya - self.cam.y + 5,10,10),'TYPE': self.tindex, 'HP': ref['HP'], 'POWER': ref['POWER'],
-									'MAXHP': ref['HP'], 'HPLOSS': ref['HP'], 'DMGSHW': 0, 'SHK': 0, 'TIME': 80, 'UPGRADE': 0, 'UPGSHW': 0, 'GIF': 0})
+									'MAXHP': ref['HP'], 'HPLOSS': ref['HP'], 'DMGSHW': 0, 'SHK': 0, 'TIME': 80, 'UPGRADE': 0, 'GIF': 0})
 								self.objects.append([5,len(self.traps) - 1,ya])
 								self.trapset = ''
 							else: self.ch_ton.play(database.SOUND['ERROR'])
@@ -552,10 +560,12 @@ class Game:
 									self.ctb = 'background2'
 									self.dialog(['...uma bosta.',1])
 									self.ch_msc.play(database.SOUND['CINEMATIC'],-1)
+									self.ctb = 'background'
+									self.dialog(['-- Departamento de tecnologia da Zaharia, Tirana --',1])
 									self.ctb = 'background3'
-									self.dialog(['Mais um dia de trabalho...',1,'Hã? O que é isso?',1,'O laboratório está sendo invadido!',1])
+									self.dialog(['Mais um dia de trabalho...',1,'Pleno século 21 e o chefe me manda presencial!',1,'Que custava eu trabalhar remoto como os outros?',1,'Hã? O que é isso?',1])
 									self.ctb = 'background4'
-									self.dialog(['Era só o que faltava...',1,'Só podia ser um vírus!',1])
+									self.dialog(['O laboratório está sendo invadido!',1,'Era só o que faltava...',1,'Só podia ser um vírus!',1])
 									self.ctb = 'background5'
 									self.dialog(['Relaxa ae mano.',1,'Não é o coronga vírus não...',1])
 									self.ctb = 'background4'
@@ -568,7 +578,7 @@ class Game:
 									if self.mnu < 3: self.transiction(True,210,1)
 									for i in range(10): self.run()
 									self.ch_msc.stop()
-									self.dialog(['...é óbvio que vou colocar máquinas para quebrar',1,'os próprios robôs do laboratório ao invés de',1,'chamar as autoridades.',1])
+									self.dialog(['...é óbvio que vou colocar máquinas para quebrar',1,'os próprios robôs do laboratório',1,'em vez de chamar as autoridades.',1])
 									self.etext = 'PRIMEIRO ANDAR'
 
 									self.elevator = 430
@@ -596,19 +606,18 @@ class Game:
 				elif self.mnu > 3:
 					if event.button == 1:
 						self.cursor = 1
-						self.mnu = 5 if (self.player['LIFES'] > 0) else 7
+						self.mnu = 7 if (self.mnu == 6) else 5
 						self.ch_msc.fadeout(5000)
 						self.transiction(True,210)
 						for i in range(30): self.run()
 						while self.logalpha > 0:
 							self.logalpha -= 5
 							self.run()
-
 						database.MAP =  0
 						database.MONEY = 0
 						database.WAVES = [1,5]
 
-						self.__init__()
+						self.setUp()
  
 		self.pressed = pygame.key.get_pressed()
 
@@ -711,6 +720,7 @@ class Game:
 		database.ENEMIES = [0,10]
 		database.WAVES = [1,3 + (database.MAP * 2)]
 		database.MONEY += database.STMONEY[database.MAP]
+		self.guimoney = database.MONEY
 		database.resetTraps()
 
 		#DRAW MAP
@@ -801,7 +811,8 @@ class Game:
 				database.VICTIMS = [1,0]
 				self.rendermap('level_' + str(database.MAP))
 				self.transiction(False,0)
-				self.ch_msc.play(database.SOUND['MAIN'],-1)
+
+				self.ch_msc.play(database.SOUND['MAIN' if (database.MAP < 2) else 'MAIN_REMIX'],-1)
 				self.pause = 0
 			else:
 				self.ch_msc.play(database.SOUND['GAMEOVER'],-1)
@@ -825,7 +836,7 @@ class Game:
 					self.run()
 				self.etext = ''
 				self.rendermap('level_' + str(database.MAP))
-				self.ch_msc.play(database.SOUND['MAIN'],-1)
+				self.ch_msc.play(database.SOUND['MAIN' if (database.MAP < 2) else 'MAIN_REMIX'],-1)
 				self.transiction(False,0)
 				self.text = 'ONDA 1'
 				self.txty = 400
@@ -1000,40 +1011,40 @@ class Game:
 					i['DMGSHW'] -= 1
 		if len(self.traps) > 0:
 			for i in self.traps:
+				posX = i['RECT'].x - self.cam.x - 10
+
 				if i['HPLOSS'] > i['HP']: i['HPLOSS'] -= 0.1
 				if i['DMGSHW'] > 0:
 					if i['DMGSHW'] < 10: a = (i['DMGSHW']/10) * 255
 					else: a = 255
-					pygame.draw.rect(self.display,(10,10,10,a),pygame.Rect(i['RECT'].x - self.cam.x - 10, i['RECT'].y - self.cam.y - 25,40,10))
-					if i['HPLOSS'] > 0: pygame.draw.rect(self.display,(245,245,0,a),pygame.Rect(i['RECT'].x - self.cam.x - 10, i['RECT'].y - self.cam.y - 25,int(40/(i['MAXHP']/i['HPLOSS'])),10))
-					if i['HP'] > 0: pygame.draw.rect(self.display,(245,78,65,a),pygame.Rect(i['RECT'].x - self.cam.x - 10, i['RECT'].y - self.cam.y - 25,int(40/(i['MAXHP']/i['HP'])),10))
+					pygame.draw.rect(self.display,(10,10,10,a),pygame.Rect(posX, i['RECT'].y - self.cam.y - 25,60,15))
+					if i['HPLOSS'] > 0: pygame.draw.rect(self.display,(245,245,0,a),pygame.Rect(posX, i['RECT'].y - self.cam.y - 25,int(60/(i['MAXHP']/i['HPLOSS'])),15))
+					if i['HP'] > 0: pygame.draw.rect(self.display,(245,78,65,a),pygame.Rect(posX, i['RECT'].y - self.cam.y - 25,int(60/(i['MAXHP']/i['HP'])),15))
+
+					if self.colide(i['RECT'], self.mp):
+						self.display.blit(self.monotype.render('reparar',True,(250,250,250)),(posX + 5, i['RECT'].y - self.cam.y - 30))
+
+						color = (100,100,250) if (database.MONEY >= 10) else (250,10,10)
+						pygame.draw.rect(self.display,color,pygame.Rect(posX, i['RECT'].y - self.cam.y - 10,60,15))
+						self.display.blit(self.monotype.render('$10',True,(10,10,10)),(posX + 5, i['RECT'].y - self.cam.y - 17))
 					i['DMGSHW'] -= 1
 
-				if self.colide(i['RECT'], self.mp): i['UPGSHW'] = 1
-				else: i['UPGSHW'] = 0
-				if i['UPGSHW'] > 0 and i['HP'] < i['MAXHP']:
-					pygame.draw.rect(self.display,(10,10,10),pygame.Rect(i['RECT'].x - self.cam.x - 5, i['RECT'].y - self.cam.y - 25,60,15))
-					self.display.blit(self.monotype.render('reparar',True,(250,250,250)),(i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y - 30))
-
-					color = (50,250,50) if (database.MONEY >= 10) else (250,10,10)
-
-					pygame.draw.rect(self.display,color,pygame.Rect(i['RECT'].x - self.cam.x - 5, i['RECT'].y - self.cam.y - 10,60,15))
-					self.display.blit(self.monotype.render('$10',True,(10,10,10)),(i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y - 17))
-
-				elif i['UPGSHW'] > 0:
-					pygame.draw.rect(self.display,(10,10,10),pygame.Rect(i['RECT'].x - self.cam.x - 5, i['RECT'].y - self.cam.y - 25,60,15))
-					self.display.blit(self.monotype.render('nível '+ str(i['UPGRADE']),True,(250,250,250)),(i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y - 30))
+				elif self.colide(i['RECT'], self.mp):
+					pygame.draw.rect(self.display,(10,10,10),pygame.Rect(posX, i['RECT'].y - self.cam.y - 25,60,15))
+					self.display.blit(self.monotype.render(f'nível {i['UPGRADE']}',True,(250,250,250)),(posX + 5, i['RECT'].y - self.cam.y - 30))
 					if i['UPGRADE'] < 5:
 						color = (10,250,10) if (database.MONEY >= database.TRAPS[i['TYPE'] - 1]['PRICE'][i['UPGRADE'] + 1]) else (250,10,10)
-						pygame.draw.rect(self.display,color,pygame.Rect(i['RECT'].x - self.cam.x - 5, i['RECT'].y - self.cam.y - 10,60,15))
-						self.display.blit(self.monotype.render('$' + str(database.TRAPS[i['TYPE'] - 1]['PRICE'][i['UPGRADE'] + 1]),True,(10,10,10)),(i['RECT'].x - self.cam.x, i['RECT'].y - self.cam.y - 17))
+						pygame.draw.rect(self.display,color,pygame.Rect(posX, i['RECT'].y - self.cam.y - 10,60,15))
+						self.display.blit(self.monotype.render('$' + str(database.TRAPS[i['TYPE'] - 1]['PRICE'][i['UPGRADE'] + 1]),True,(10,10,10)),(posX + 5, i['RECT'].y - self.cam.y - 17))
 
 		#MONEY & LIFE
 		pygame.draw.rect(self.display, (10,10,10), pygame.Rect(0,0,self.displayzw,55))
 		self.display.blit(self.monotype.render(f'Andar {database.MAP + 1} - Onda {database.WAVES[0]}', True, (250,250,250)),(20, 10))
 
 		if self.guimoney < database.MONEY: self.guimoney += 1
-		if self.guimoney > database.MONEY: self.guimoney -= 1
+		if self.guimoney > database.MONEY:
+			if self.guimoney - database.MONEY > 100: self.guimoney -= 1
+			else: self.guimoney -= 5
 
 		self.display.blit(self.monotype.render(f'${self.guimoney}', True, (250,250,250)),(20, 25))
 
@@ -1081,15 +1092,8 @@ class Game:
 			
 		#ELEVATOR
 		if self.etext != '':
-			l1 = 0
-			for l in self.text:
-				if l in ['m','w','M','Q','T','U','V','W','Y','?']: l1 += 8
-				elif l in ['f','r']: l1 += 6
-				elif l in ['J']: l1 += 5
-				elif l in ['l']: l1 += 4
-				elif l in ['i','I','!','.',',']: l1 += 2
-				else: l1 += 7
-			self.display.blit(self.monotype.render(self.etext, True, (250,250,250)),(250 - l1, 180))
+			txtRender = self.monotype.render(self.etext, True, (250,250,250))
+			self.display.blit(txtRender,(int(self.displayzw/2) - int(txtRender.get_size()[0]/2), 180))
 		if self.elevator > 0 and self.elevator < 430:
 			self.display.blit(database.getImg('Sprites/elevator.png'),(250,self.elevator - 25))
 			if database.MAP > 0:
@@ -1098,15 +1102,8 @@ class Game:
 			
 		#TEXT
 		if self.text != '':
-			l1 = 0
-			for l in self.text:
-				if l in ['m','w','M','Q','T','U','V','W','Y','?']: l1 += 8
-				elif l in ['f','r']: l1 += 6
-				elif l in ['J']: l1 += 5
-				elif l in ['l']: l1 += 4
-				elif l in ['i','I','!','.',',']: l1 += 2
-				else: l1 += 7
-
+			txtRender = self.monotype.render(self.text, True, (10,10,10))
+			txtCenter = int(self.displayzw/2) - int(txtRender.get_size()[0]/2)
 			srf = pygame.Surface((self.displayzw,10))
 			srf.set_alpha(100)
 			srf.fill((0, 0, 0))
@@ -1115,12 +1112,12 @@ class Game:
 			self.display.blit(self.txtsrf,(-40 + self.ptmove, 20 + self.txty))
 			self.ptmove += 1
 			if self.ptmove > 40: self.ptmove = 0
-			rct = pygame.Surface((l1 + 20,50))
+			rct = pygame.Surface((int(txtRender.get_size()[0]) + 20,50))
 			rct.set_alpha(self.logalpha)
 			rct.fill((250, 250, 250))
-			self.display.blit(rct,(329 - l1,20 + self.txty))
+			self.display.blit(rct,(txtCenter,20 + self.txty))
 			#pygame.draw.rect(self.display, (250, 250, 250), pygame.Rect(329 - l1,20 + self.txty,l1 + 20,50))
-			self.display.blit(self.monotype.render(self.text, True, (10,10,10)),(339 - l1, 30 + self.txty))
+			self.display.blit(txtRender,(txtCenter + 10, 30 + self.txty))
 			if self.txty > 150 and self.txty < 240: self.txty -= 1
 			elif self.txty >= 240: self.txty -= 20
 			elif self.player['LIFES'] != 0: self.txty -= 20

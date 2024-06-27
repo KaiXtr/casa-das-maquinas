@@ -40,7 +40,7 @@ for j in os.listdir(getPath('SFX')):
 PX:int = 50
 PY:int = 120
 MAP:int = 0
-SFX:float = 1.0
+SFX:float = 0.5
 MSC:float = 1.0
 
 MONEY:int = 0
@@ -55,10 +55,10 @@ def resetTraps():
     global TRAPS
     TRAPS = [
     {'PRICE': [10,20,30,40,50,60], 'HP': 5, 'POWER': 1},
-    {'PRICE': [20,30,60,100,150,200], 'HP': 8, 'POWER': 1},
+    {'PRICE': [20,30,60,100,150,200], 'HP': 15, 'POWER': 1},
     {'PRICE': [50,40,80,120,150,180], 'HP': 5, 'POWER': 1},
-    {'PRICE': [70,40,80,120,200,300], 'HP': 10, 'POWER': 2},
-    {'PRICE': [150,60,100,150,300,500], 'HP': 12, 'POWER': 2},
+    {'PRICE': [70,40,80,120,200,300], 'HP': 20, 'POWER': 2},
+    {'PRICE': [150,60,100,150,300,500], 'HP': 30, 'POWER': 2},
     ]
 
 ROBOTS = [
