@@ -30,6 +30,7 @@ class Game:
 		self.ch_stp = pygame.mixer.Channel(3)
 		self.ch_stp.set_volume(database.SFX)
 		self.rectdebug = False
+		self.guimoney = 0
 		
 		self.player = {'RECT': pygame.Rect(database.PX,database.PY,20,10), 'SPRITE': 'STAND', 'GIF': 0.0, 'HP': 10, 'HPLOSS': 10, 'LIFES': 3, 'DIRECTION': 0, 'SPD': 2, 'DMGTIM': 0}
 		self.pause:int = 3
@@ -160,7 +161,7 @@ class Game:
 		if i['DMGTIM'] > 50 and i['DMGTIM'] < 80 and i['TYPE'] == 4 and i['LASER'] != None:
 			posX = i['RECT'].x - (round(img.get_rect().width/2) - 10) - self.cam.x + 10
 			posY = i['RECT'].y - (img.get_rect().height - 12) - self.cam.y + 10 - ex
-			pygame.draw.line(self.display, (255,10,10), (posX,posY,i['LASER'],2))
+			pygame.draw.line(self.display, (255,10,10), (posX,posY),i['LASER'],2)
 
 		#MOVE
 		if i['REVERSE'] == False:
@@ -207,12 +208,12 @@ class Game:
 					j['HP'] -= i['DAMAGE']
 					i['DMGTIM'] = 200
 					if j['HP'] > 0:
-						self.ch_sfx.play(database.SOUND['HIT'])
+						self.ch_ton.play(database.SOUND['HIT'])
 						j['DMGSHW'] = 200
 						j['SHK'] = 5
 					else:
-						self.ch_sfx.play(database.SOUND['DESTROY'])
-						self.explosions.append({'RECT': pygame.Rect(j['RECT'].x,j['RECT'].y,10,10), 'GIF': 0})
+						self.ch_ton.play(database.SOUND['DESTROY'])
+						self.addExplosion(j)
 		if i['LASER'] != None and i['DMGTIM'] > 50 and i['DMGTIM'] < 80:
 			for j in self.traps:
 				if self.colide(pygame.Rect(i['LASER'][0],i['LASER'][1],5,5),j['RECT']):
@@ -220,12 +221,12 @@ class Game:
 						if j['SHK'] == 0:
 							j['HP'] -= i['DAMAGE']
 							if j['HP'] > 0:
-								self.ch_sfx.play(database.SOUND['HIT'])
+								self.ch_ton.play(database.SOUND['HIT'])
 								j['DMGSHW'] = 200
 								j['SHK'] = 5
 							else:
-								self.ch_sfx.play(database.SOUND['DESTROY'])
-								self.explosions.append({'RECT': pygame.Rect(j['RECT'].x,j['RECT'].y,10,10), 'GIF': 0})
+								self.ch_ton.play(database.SOUND['DESTROY'])
+								self.addExplosion(j)
 					else: j['GIF'] = 1
 
 		#ENEMY DAMAGE
@@ -245,7 +246,7 @@ class Game:
 						i['HP'] -= b['DAMAGE']
 						i['DMGSHW'] = 200
 						b['DESTROY'] = True
-						self.explosions.append({'RECT': pygame.Rect(i['RECT'].x,i['RECT'].y,10,10), 'GIF': 0})
+						self.addExplosion(i)
 		
 		if i['RECT'].x < 0: i['HP'] = 0
 		if i['RECT'].x > self.displayzw: i['HP'] = 0
@@ -258,7 +259,7 @@ class Game:
 			self.objects.append([4,self.itemcount,i['RECT'].y])
 			self.itemcount += 1
 			database.ENEMIES[0] += 1
-			self.explosions.append({'RECT': pygame.Rect(i['RECT'].x,i['RECT'].y,10,10), 'GIF': 0})
+			self.addExplosion(i)
 			
 	def item(self,i):
 		if i['TYPE'] < 5: sprite = 'COIN'
@@ -336,7 +337,7 @@ class Game:
 
 		#EXPLODE
 		if i['HP'] <= 0:
-			self.explosions.append({'RECT': pygame.Rect(i['RECT'].x,i['RECT'].y,10,10), 'GIF': 0})
+			self.addExplosion(i)
 	
 	def door(self,i):
 		if database.ENEMIES[0] >= database.ENEMIES[1]:
@@ -354,7 +355,7 @@ class Game:
 					self.pause = 3
 					for e in self.en:
 						e['HP'] = 0
-						self.explosions.append({'RECT': pygame.Rect(e['RECT'].x,e['RECT'].y,10,10), 'GIF': 0})
+						self.addExplosion(i)
 					self.ch_msc.fadeout(2500)
 					for t in range(70): self.run()
 					self.ch_msc.play(database.SOUND['VICTORY'])
@@ -373,8 +374,6 @@ class Game:
 			if i['SPAWN'] == 0:
 				rangeInit:int = math.floor(database.WAVES[0]/3)
 				rangeLast:int = database.MAP + math.floor(database.WAVES[0]/2)
-				print(f'range: {rangeInit}-{rangeLast}')
-				print(f'Mapa: {database.MAP} | Wave: {database.WAVES[0]}')
 
 				tp = round(random.randint(rangeInit,rangeLast))
 				rb = database.ROBOTS[tp].copy()
@@ -437,6 +436,9 @@ class Game:
 				else: return 1
 		else: return 1
 
+	def addExplosion(self, obj):
+		self.explosions.append({'RECT': pygame.Rect(obj['RECT'].x + random.randint(-10,10),obj['RECT'].y + random.randint(-10,10),10,10), 'GIF': 0})
+
 	def events(self):
 		for event in pygame.event.get():				
 			if event.type == pygame.QUIT:
@@ -464,17 +466,22 @@ class Game:
 							if self.colide(i['RECT'],self.mp):
 								#CONSERTAR ARMADILHA
 								if i['HP'] < i['MAXHP']:
+									up = True
 									self.ch_sfx.play(database.SOUND['REPAIR'])
 									i['HP'] = i['MAXHP']
 									database.MONEY -= 10
 
-								#ATUALIZAR ARMADILHA
+								#MELHORAR ARMADILHA
 								elif i['UPGRADE'] < 5:
 									up = True
 									if database.MONEY >= database.TRAPS[i['TYPE'] - 1]['PRICE'][i['UPGRADE'] + 1]:
 										self.ch_sfx.play(database.SOUND['BUY'])
 										database.MONEY -= database.TRAPS[i['TYPE'] - 1]['PRICE'][i['UPGRADE'] + 1]
 										i['UPGRADE'] += 1
+										if i['TYPE'] == 1:
+											i['HP'] += 5
+											i['MAXHP'] = i['HP']
+											i['HPLOSS'] = i['HP']
 									else: self.ch_sfx.play(database.SOUND['ERROR'])
 
 						if self.trapset == '' and up == False:
@@ -521,8 +528,8 @@ class Game:
 					if event.button == 1:
 						self.cursor = 1
 						if self.winbar == 55:
-							op1 = pygame.Rect(170,355,60,35)
-							op2 = pygame.Rect(310,355,70,35)
+							op1 = pygame.Rect(170,self.displayzh - 45,60,35)
+							op2 = pygame.Rect(310,self.displayzh - 45,70,35)
 							if self.colide(self.mp,op1) and self.nobutton == False:
 								if self.tut == False:
 									self.ch_sfx.play(database.SOUND['OK'])
@@ -552,16 +559,19 @@ class Game:
 									self.ctb = 'background5'
 									self.dialog(['Relaxa ae mano.',1,'Não é o coronga vírus não...',1])
 									self.ctb = 'background4'
-									self.dialog(['Isso é causa de um vírus de computador',1,'...ele está hackeando os robôs.',1,'Logo logo vão atacar geral daqui.',1])
+									self.dialog(['Isso é causa de um vírus de computador',1,'...ele está hackeando os robôs.',1,'Logo logo, vão atacar geral daqui.',1])
 									self.ctb = 'background8'
-									self.dialog(['Argh... céu azul... sol amarelo...',1,'vida...natureza...',1,'...eu odeio tudo isso!',1,'E odeio mais ainda esses robôs!',1])
+									self.dialog(['Argh... céu azul... sol amarelo...',1,'vida... natureza...',1,'...eu odeio tudo isso!',1,'E odeio mais ainda esses robôs!',1])
 									self.dialog(['Eles querem nos tirar do sedentarismo...',1,'...e nos obrigar a sair do laboratório!',1])
 									self.ctb = 'background6'
 									self.dialog(['Parece que vou ter que salvar o dia.',1,'Afe, mas isso vai ser difícil...',1])
-									if self.mnu < 3: self.transiction(True,210,2)
+									if self.mnu < 3: self.transiction(True,210,1)
+									for i in range(10): self.run()
 									self.ch_msc.stop()
 									self.dialog(['...é óbvio que vou colocar máquinas para quebrar',1,'os próprios robôs do laboratório ao invés de',1,'chamar as autoridades.',1])
 									self.etext = 'PRIMEIRO ANDAR'
+
+									self.elevator = 430
 									while self.elevator > 0:
 										self.elevator -= 5
 										self.run()
@@ -586,7 +596,7 @@ class Game:
 				elif self.mnu > 3:
 					if event.button == 1:
 						self.cursor = 1
-						self.mnu = 5
+						self.mnu = 5 if (self.player['LIFES'] > 0) else 7
 						self.ch_msc.fadeout(5000)
 						self.transiction(True,210)
 						for i in range(30): self.run()
@@ -796,7 +806,7 @@ class Game:
 			else:
 				self.ch_msc.play(database.SOUND['GAMEOVER'],-1)
 				self.pause = 3
-				self.mnu = 5
+				self.mnu = 6
 				self.text = 'Fim de Jogo'
 				self.txty = 400
 
@@ -808,11 +818,12 @@ class Game:
 			if database.MAP < 3:
 				if database.MAP == 1: self.etext = 'SEGUNDO ANDAR'
 				if database.MAP == 2: self.etext = 'TERCEIRO ANDAR'
+
+				self.elevator = 430
 				while self.elevator > 0:
 					self.elevator -= 5
 					self.run()
 				self.etext = ''
-				self.elevator = 430
 				self.rendermap('level_' + str(database.MAP))
 				self.ch_msc.play(database.SOUND['MAIN'],-1)
 				self.transiction(False,0)
@@ -824,13 +835,13 @@ class Game:
 				self.ctb = 'background3'
 				self.ch_msc.play(database.SOUND['CINEMATIC'],-1)
 				self.transiction(False,55)
-				self.dialog(['Finalmente salvei todos os cientistas',1])
+				self.dialog(['Finalmente salvei todos os cientistas.',1])
 				self.ctb = 'background5'
-				self.dialog(['Bom...',1,'Pelo menos os que eu pude salvar',1])
+				self.dialog(['Bom...',1,'...pelo menos os que eu pude salvar.',1])
 				self.ctb = 'background3'
-				self.dialog(['Mas o que importa é que eu nunca mais',1,'vou correr riscos outra vez',1])
+				self.dialog(['Mas o que importa é que eu nunca mais',1,'vou correr riscos outra vez.',1])
 				self.ctb = 'background6'
-				self.dialog(['Agora vou sair pra comprar paçoca',1])
+				self.dialog(['Agora vou sair pra comprar paçoca.',1])
 				self.ctb = 'background7'
 				self.ch_msc.play(database.SOUND['EGG_RAP'],-1)
 				self.player['LIFES'] = 0
@@ -1019,34 +1030,40 @@ class Game:
 
 		#MONEY & LIFE
 		pygame.draw.rect(self.display, (10,10,10), pygame.Rect(0,0,self.displayzw,55))
-		self.display.blit(self.monotype.render('$' + str(database.MONEY), True, (250,250,250)),(20, 15))
+		self.display.blit(self.monotype.render(f'Andar {database.MAP + 1} - Onda {database.WAVES[0]}', True, (250,250,250)),(20, 10))
+
+		if self.guimoney < database.MONEY: self.guimoney += 1
+		if self.guimoney > database.MONEY: self.guimoney -= 1
+
+		self.display.blit(self.monotype.render(f'${self.guimoney}', True, (250,250,250)),(20, 25))
 
 		if self.player['HPLOSS'] > self.player['HP']: self.player['HPLOSS'] -= 0.1
 		
 		if self.player['LIFES'] > 0:
 			for i in range(self.player['LIFES']):
-				self.display.blit(database.getImg('Sprites/life.png'),(520 + (i * 20), 20))
+				self.display.blit(database.getImg('Sprites/life.png'),(500 + (i * 20), 20))
 
 		#ENEMIES & VICTIMS
-		self.display.blit(database.getImg('Sprites/robot_0_0.png'),(300, 20))
-		self.display.blit(self.monotype.render(str(database.ENEMIES[0]) + '/' + str(database.ENEMIES[1]), True, (250,250,250)),(330, 15))
-		self.display.blit(database.getImg('Sprites/victim_0_0.png'),(400, 15))
-		self.display.blit(self.monotype.render(str(database.VICTIMS[0]) + '/' + str(database.VICTIMS[1]), True, (250,250,250)),(430, 15))
+		self.display.blit(database.getImg('Sprites/robot_0_0.png'),(350, 20))
+		self.display.blit(self.monotype.render(str(database.ENEMIES[0]) + '/' + str(database.ENEMIES[1]), True, (250,250,250)),(380, 15))
+		vv = 5 - database.VICTIMS[0] if (database.VICTIMS[0] > 0) else 4
+		self.display.blit(database.getImg(f'Sprites/victim_{vv}_0.png'),(430, 15))
+		self.display.blit(self.monotype.render(str(database.VICTIMS[0]) + '/' + str(database.VICTIMS[1]), True, (250,250,250)),(460, 15))
 
 		#TRAPS
 		for i in range(0,5):
 			if database.MONEY >= database.TRAPS[i]['PRICE'][0]:
-				pygame.draw.rect(self.display, (250,250,250), pygame.Rect(100 + ((i) * 35),5,30,30))
-			else: pygame.draw.rect(self.display, (165,165,165), pygame.Rect(100 + ((i) * 35),5,30,30))
-			self.display.blit(database.getImg('Sprites/icon_' + str(i + 1) + '.png'),(100 + ((i) * 35),5))
+				pygame.draw.rect(self.display, (250,250,250), pygame.Rect(150 + ((i) * 35),5,30,30))
+			else: pygame.draw.rect(self.display, (165,165,165), pygame.Rect(150 + ((i) * 35),5,30,30))
+			self.display.blit(database.getImg('Sprites/icon_' + str(i + 1) + '.png'),(150 + ((i) * 35),5))
 			if self.tindex == i + 1:
-				pygame.draw.rect(self.display, (250,250,250), pygame.Rect(100 + ((i) * 35),35,30,20))
-				self.display.blit(self.monotype.render(str(database.TRAPS[i]['PRICE'][0]), True, (10,10,10)),(105 + ((i) * 35), 30))
-			else: self.display.blit(self.monotype.render(str(database.TRAPS[i]['PRICE'][0]), True, (250,250,250)),(105 + ((i) * 35), 30))
+				pygame.draw.rect(self.display, (250,250,250), pygame.Rect(150 + ((i) * 35),35,30,20))
+				self.display.blit(self.monotype.render(str(database.TRAPS[i]['PRICE'][0]), True, (10,10,10)),(155 + ((i) * 35), 30))
+			else: self.display.blit(self.monotype.render(str(database.TRAPS[i]['PRICE'][0]), True, (250,250,250)),(155 + ((i) * 35), 30))
 		i += 1
 
 		#BACKGROUND
-		if self.mnu not in (3,5):
+		if self.mnu not in (3,6,7):
 			if self.ctb != None: self.display.blit(database.getImg(f'Sprites/{self.ctb}.png'),(0,0))
 			else: pygame.draw.rect(self.display,(0,0,0),pygame.Rect(0,0,self.displayzw,self.displayzh))
 		if self.opt == 10:
@@ -1127,24 +1144,24 @@ class Game:
 			srf.blit(img,(0,0))
 			self.display.blit(srf,(120, 100))
 			if self.winbar == 55:
-				op1 = pygame.Rect(170,355,60,35)
-				op2 = pygame.Rect(310,355,70,35)
+				op1 = pygame.Rect(170,self.displayzh - 45,60,35)
+				op2 = pygame.Rect(310,self.displayzh - 45,70,35)
 				if self.tut == False:
 					if self.colide(self.mp,op1): pygame.draw.rect(self.display,(145,35,254),op1)
 					if self.colide(self.mp,op2): pygame.draw.rect(self.display,(145,35,254),op2)
-					self.display.blit(self.monotype.render('jogar', True, (250,250,250)),(180,360))
-					self.display.blit(self.monotype.render('ajustes', True, (250,250,250)),(320,360))
+					self.display.blit(self.monotype.render('jogar', True, (250,250,250)),(180,self.displayzh - 40))
+					self.display.blit(self.monotype.render('ajustes', True, (250,250,250)),(320,self.displayzh - 40))
 				elif self.opt == 0:
 					if self.colide(self.mp,op1): pygame.draw.rect(self.display,(145,35,254),op1)
-					self.display.blit(self.monotype.render('ok', True, (250,250,250)),(180,360))
+					self.display.blit(self.monotype.render('ok', True, (250,250,250)),(180,self.displayzh - 40))
 				elif self.opt == 1:
 					if self.colide(self.mp,op2): pygame.draw.rect(self.display,(145,35,254),op2)
-					self.display.blit(self.monotype.render('voltar', True, (250,250,250)),(320,360))
+					self.display.blit(self.monotype.render('voltar', True, (250,250,250)),(320,self.displayzh - 40))
 
 		#DIALOGS
 		if self.dlg != []:
-			self.display.blit(self.monotype.render(self.dlg[0], True, (250,250,250)),(100,360))
-			if self.dlgping % 5 == 0: self.display.blit(database.getImg('Sprites/ping.png'),(480,365))
+			self.display.blit(self.monotype.render(self.dlg[0], True, (250,250,250)),(100,self.displayzh - 40))
+			if self.dlgping % 5 == 0: self.display.blit(database.getImg('Sprites/ping.png'),(480,self.displayzh - 35))
 
 		#TUTORIAL
 		if self.tutfa > 0:

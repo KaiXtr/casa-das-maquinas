@@ -54,7 +54,7 @@ TRAPS = []
 def resetTraps():
     global TRAPS
     TRAPS = [
-    {'PRICE': [10,20,30,40,50,60], 'HP': 3, 'POWER': 1},
+    {'PRICE': [10,20,30,40,50,60], 'HP': 5, 'POWER': 1},
     {'PRICE': [20,30,60,100,150,200], 'HP': 8, 'POWER': 1},
     {'PRICE': [50,40,80,120,150,180], 'HP': 5, 'POWER': 1},
     {'PRICE': [70,40,80,120,200,300], 'HP': 10, 'POWER': 2},
